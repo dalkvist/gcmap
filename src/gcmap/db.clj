@@ -23,7 +23,7 @@
       (doseq [coll [:map]]
         (or (collection-exists? coll);; Create collection if it doesn't exist.
             (do (create-collection! coll)
-                (save-map! (-> (slurp "http://dl.dropbox.com/u/1691940/gcmap/t-5d.js")
+                (save-map! (-> (slurp "http://dl.dropbox.com/u/1691940/gcmap/backup.js")
                               (j/parse-string true)
                               (assoc :name "week 5 d")))
                 ;; (when (= coll :traderausers)
