@@ -1,6 +1,7 @@
 (ns gcmap.db
   (:use [somnium.congomongo]
-        [somnium.congomongo.config :only [*mongo-config*]]))
+        [somnium.congomongo.config :only [*mongo-config*]])
+  (:require [cheshire.core :as j]))
 
 (declare save-map!)
 
