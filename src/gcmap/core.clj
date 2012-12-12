@@ -29,7 +29,7 @@
       ]]))
 
 (noir/defpage "/" []
-  (let [m (first get-maps)]
+  (let [m (first (get-maps))]
     (layout [:h3 (:name m)]
             [:div#map]
             [:div#wcp]
