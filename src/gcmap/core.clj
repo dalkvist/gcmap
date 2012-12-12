@@ -32,7 +32,7 @@
   (let [m (first (get-maps))]
     (layout [:h3 (:name m)]
             [:div#map]
-            [:div#wcp]
+            [:div#wcp [:span.a1] [:span.a2]]
             [:a#save {:href "#"} "save"]
             (ph/javascript-tag (str "var terr = " (j/generate-string m))))))
 
