@@ -1,0 +1,57 @@
+.clear{
+  clear:both !important;
+}
+#map {
+  width: 800px;
+  height: 600px;
+  }
+  
+form{
+  width:350px;
+}
+form > * {
+  display: block;
+  margin-right: 25px;
+  clear:both;
+}
+form span label {
+  width: 160px;
+  display: block;
+  float:left;
+  margin-top: 4px;
+  height:22px;
+}
+form span input[type="text"] {
+  width: 150px;
+  display: block;
+  float:right;
+  height:22px;
+}
+#wcp{
+  position: absolute;
+  bottom: 100px;
+  left: 50px;
+  z-index: 999999;
+  background-color: white;
+}
+#wcp span {
+  padding:5px;
+  display: block;
+  font-weight: bold;
+}
+#wcp span.a1 {
+  color:#AA0000;
+}
+#wcp span.a2 {
+  color:#0000AA;
+}
+#save {
+  display: block;
+  position: absolute;
+  bottom: 5px;
+  right: 10px;
+  z-index: 9999999;
+}
+#export{
+  word-break: break-all;
+}
