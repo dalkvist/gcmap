@@ -2,6 +2,8 @@
   (:use [somnium.congomongo]
         [somnium.congomongo.config :only [*mongo-config*]]))
 
+(declare save-map!)
+
 (defn- split-mongo-url [url]
   "Parses mongodb url from heroku, eg. mongodb://user:pass@localhost:1234/db"
   (let [matcher (re-matcher #"^.*://(.*?):(.*?)@(.*?):(\d+)/(.*)$" url)] ;; Setup the regex.
