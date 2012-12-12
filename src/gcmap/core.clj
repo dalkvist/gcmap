@@ -39,7 +39,7 @@
   (let [m (first (get-maps))]
     (map-page m)))
 
-(noir/defpage "/:mapname" [mapname]
+(noir/defpage "/map/:mapname" [mapname]
   (if-let [m (first (filter #(= mapname (:name %)) (get-maps)))]
     (map-page m)
     (map-page (last (get-maps)))))
