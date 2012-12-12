@@ -28,13 +28,21 @@
       content
       ]]))
 
+(noir/defpartial map-page [m]
+  (layout [:h3 (:name m)]
+          [:div#map]
+          [:div#wcp [:span.a1] [:span.a2]]
+          [:a#save {:href "#"} "save"]
+          (ph/javascript-tag (str "var terr = " (j/generate-string m)))))
+
 (noir/defpage "/" []
   (let [m (first (get-maps))]
-    (layout [:h3 (:name m)]
-            [:div#map]
-            [:div#wcp [:span.a1] [:span.a2]]
-            [:a#save {:href "#"} "save"]
-            (ph/javascript-tag (str "var terr = " (j/generate-string m))))))
+    (map-page m)))
+
+(noir/defpage "/:mapname" [mapname]
+  (if-let [m (first (filter #(= mapname (:name %)) (get-maps)))]
+    (map-page m)
+    (map-page (last (get-maps)))))
 
 (defonce server (atom nil))
 
