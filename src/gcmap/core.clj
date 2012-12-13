@@ -64,6 +64,9 @@
             (str (m :name) " " (m :newmap) " " (m :password))
             (save-map! (assoc (j/decode (m :newmap)) :name (m :name)  )))))
 
+(noir/defpage [:get "/export"] []
+  (res/json (get-maps)))
+
 (defonce server (atom nil))
 
 (defn -main [& m]
