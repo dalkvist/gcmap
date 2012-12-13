@@ -89,18 +89,19 @@ var updateTerritory = function(){
 };
 
 var updateWCP  = function(){
-  var territoryCount = function(army){return filterTerritory("army",army).length};
-  var divitionCount = function(army){
+    if(territories.features.length > 0){
+        var territoryCount = function(army){return filterTerritory("army",army).length};
+        var divitionCount = function(army){
                                        var terrs = $.map(filterTerritory('army',army), function(t){return t.attributes.divitions - 0});
                                        return terrs.reduce(function(a,b){return a + b;});
                                        };
-  var tb = $.map(Object.keys(theaters),function(key){
+        var tb = $.map(Object.keys(theaters),function(key){
                                                                     var res = new Object();
                                                                     res.theater = key;
                                                                     var armys = Object.keys(frequencies($.map(filterTerritory("theater", key), function(t){return t.attributes.army})));
                                                                     res.army = (armys.length == 1 ? armys[0] : ""); return res;  });
 
-  var getArmyCPs = function(army){
+        var getArmyCPs = function(army){
                                     var bonuses = $.map($(tb).filter(function(){return this.army == army}),
                                                                        function(t){ return theaters[t.theater] - 0 });
                                     if(bonuses != null && bonuses.length > 0 ){
@@ -111,19 +112,19 @@ var updateWCP  = function(){
                                     return (territoryCount(army)  - 0) + (bonuses - 0);
                                    };
 
-  var st = territoryCount("star");
-  var gt = territoryCount("gld");
-  var tt = gt + st;
-  var gcp = getArmyCPs("gld");
-  var scp = getArmyCPs("star");
-  var twcp = gcp + scp;
-  $("#wcp .a1").text( "STAR territory: " + (st / tt * 100 ).toFixed(2) + "% wcp: " + (scp / twcp * 100 ).toFixed(2) + "% divitions: " + divitionCount("star"));
-  $("#wcp .a2").text(  "GLD territory: " + (gt / tt * 100 ).toFixed(2) + "% wcp: " + (gcp / twcp * 100 ).toFixed(2) + "% divitions: " + divitionCount("gld"));
-
+        var st = territoryCount("star");
+        var gt = territoryCount("gld");
+        var tt = gt + st;
+        var gcp = getArmyCPs("gld");
+        var scp = getArmyCPs("star");
+        var twcp = gcp + scp;
+        $("#wcp .a1").text( "STAR territory: " + (st / tt * 100 ).toFixed(2) + "% wcp: " + (scp / twcp * 100 ).toFixed(2) + "% divitions: " + divitionCount("star"));
+        $("#wcp .a2").text(  "GLD territory: " + (gt / tt * 100 ).toFixed(2) + "% wcp: " + (gcp / twcp * 100 ).toFixed(2) + "% divitions: " + divitionCount("gld"));
+    }
 
 }
 
-var map, selectControl, selectedFeature;
+var map, selectControl, selectedFeature, loadMap, getMap, territories;
 function onPopupClose(evt) {
     selectControl.unselect(selectedFeature);
 }
@@ -190,10 +191,26 @@ function onFeatureUnselect(feature) {
     feature.popup = null;
 }
 var geojson = new OpenLayers.Format.GeoJSON();
-var saveTerritorys = function(){
-                              $("#export").text(geojson.write(map.layers[1].features));
-                              };
-$("#save").live("click", saveTerritorys);
+
+$("#save").live("click", function(){
+    $("#saveform").toggle(true);
+});
+
+$("#saveform a").live("click", function(){
+    var n = $("#name").val();
+    var p = $("#password").val();
+    var f = geojson.write(territories.features);
+    $.post("http://" + window.location.host + "/save",
+           {"name" : n, "password" : p, "newmap" : f},
+           function(){});
+    return false;
+});
+
+$("#maps a").live("click", function(){
+    getMap($(this).text());
+    updateWCP();
+});
+
 $(document).ready(  function (){
   $("#map").height($(document).height()*0.9);
   $("#map").width($(document).width()*0.95);
@@ -299,11 +316,23 @@ $(document).ready(  function (){
            }
     );
 
-    var territories = new OpenLayers.Layer.Vector("Territories", {
+    territories = new OpenLayers.Layer.Vector("Territories", {
         styleMap: new OpenLayers.StyleMap(style)
     });
 
-    territories.addFeatures(geojson.read(terr));
+
+    getMap = function(name){
+        $.get("http://" + window.location.host + "/map/" +  name, function(data){ loadMap(data)});
+    }
+
+    loadMap = function(data){
+        territories.removeAllFeatures();
+        territories.addFeatures(geojson.read(data));
+        updateWCP();
+    }
+
+
+    getMap("latest");
 
    selectControl = new OpenLayers.Control.SelectFeature(territories, {hover:false,box:false,onSelect: onFeatureSelect, onUnselect: onFeatureUnselect})
    map.addControl(selectControl);

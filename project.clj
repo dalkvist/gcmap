@@ -11,6 +11,7 @@
                  [clj-time "0.3.7"]
                  [org.clojure/core.logic "0.6.7"]
                  [org.clojars.crimeminister/gaka "0.2.2"]
+                 [ring-middleware-format "0.2.3"]
                  [clj-stacktrace "0.2.4"]]
   :main gcmap.core
   :jvm-opts ["-Xms350m" "-Xmx350m" "-server" "-XX:+UseConcMarkSweepGC"

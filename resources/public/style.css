@@ -1,11 +1,24 @@
 .clear{
   clear:both !important;
 }
+#maps {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 80%;
+}
+
+#maps a{
+    display:block;
+    margin:5px;
+    float:right;
+}
+
 #map {
   width: 800px;
   height: 600px;
   }
-  
+
 form{
   width:350px;
 }
@@ -54,4 +67,25 @@ form span input[type="text"] {
 }
 #export{
   word-break: break-all;
+}
+
+#saveform{
+    display:none;
+    position: fixed;
+    left:0;
+    right:0;
+    top:0;
+    bottom:0;
+    z-index: 99999;
+    margin: 25% 50%;
+}
+
+#saveform form{
+    background-color:#eeeeee;
+    border: 3px solid #666666;
+    width: 250px;
+    height: 175px;
+}
+#saveform form > *{
+    margin:10px 25px;
 }

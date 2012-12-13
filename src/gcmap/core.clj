@@ -1,11 +1,14 @@
 (ns gcmap.core
   (:use [ring.adapter.jetty]
-        [gcmap.db :only [get-maps save-map!]])
+        [gcmap.db :only [get-maps save-map!]]
+        [ring.middleware.format-params :only [wrap-restful-params]])
   (:require (compojure [route :as route])
             (ring.util [response :as response])
             (ring.middleware [multipart-params :as mp])
             [noir.response :as res]
             [noir.server :as server]
+            [noir.validation :as vali]
+            [hiccup.form-helpers :as fh]
             [hiccup.page-helpers :as ph]
             [noir.core :as noir]
             [hiccup.core :as hiccup]
@@ -30,22 +33,40 @@
 
 (noir/defpartial map-page [m]
   (layout [:h3 (:name m)]
+          [:div#maps (for [m (reverse (sort (map :name (get-maps))))]
+                      (ph/link-to "#" m))]
           [:div#map]
           [:div#wcp [:span.a1] [:span.a2]]
           [:a#save {:href "#"} "save"]
+          [:div#saveform (fh/form-to [:post "save"]
+                                     (fh/hidden-field "terr")
+                                     (fh/label "lName" "name:")
+                                     (fh/text-field "name")
+                                     (fh/label "lPass" "password:")
+                                     (fh/text-field "password")
+                                     (ph/link-to "#save" "save"))]
           (ph/javascript-tag (str "var terr = " (j/generate-string m)))))
+
+(noir/defpage "/favicon.ico" [] "")
 
 (noir/defpage "/" []
   (let [m (first (get-maps))]
     (map-page m)))
 
-(noir/defpage "/map/:mapname" [mapname]
-  (if-let [m (first (filter #(= mapname (:name %)) (get-maps)))]
-    (map-page m)
-    (map-page (last (get-maps)))))
+(noir/defpage [:get "/map/:mapname"] {:keys [mapname]}
+  (res/json (if-let [m (first (filter #(= mapname (:name %)) (get-maps)))]
+              m
+              (last (get-maps)))))
+
+(noir/defpage [:post "/save"] {:as m}
+    (layout (str (m :name) " " (m :newmap) " " (m :password))
+          (when (and (m :name) (m :newmap) (m :password) (= (m :password) "super secret gc password"))
+            (str (m :name) " " (m :newmap) " " (m :password))
+            (save-map! (assoc (j/decode (m :newmap)) :name (m :name)  )))))
 
 (defonce server (atom nil))
 
 (defn -main [& m]
   (let [port (Integer/parseInt (get (System/getenv) "PORT" "8082"))]
-    (reset! server (server/start port))))
+    (reset! server (server/start port))
+    (server/add-middleware wrap-restful-params mp/wrap-multipart-params)))
