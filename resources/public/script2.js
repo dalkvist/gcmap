@@ -326,6 +326,7 @@ $(document).ready(  function (){
     }
 
     loadMap = function(data){
+        $("h3").text(data.name);
         territories.removeAllFeatures();
         territories.addFeatures(geojson.read(data));
         updateWCP();
