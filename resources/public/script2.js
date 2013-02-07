@@ -211,6 +211,19 @@ $("#maps a").live("click", function(){
     updateWCP();
 });
 
+var highlightTerritory = function(text){
+    $(territories.features).each(function(){
+        if(this.attributes.map.toLowerCase().indexOf(text.toLowerCase()) != -1){
+            this.attributes.search = true;
+        }else{
+            this.attributes.search = false;
+        }
+    });
+    territories.redraw();
+};
+
+$("#search form").live("submit", function(){ highlightTerritory($("#mapSearch").val()); return false;})
+
 $(document).ready(  function (){
   $("#map").height($(document).height()*0.9);
   $("#map").width($(document).width()*0.95);
@@ -242,23 +255,26 @@ $(document).ready(  function (){
             labelOutlineWidth: 1
         }, {context: {
               getLabel: function(feature){
-                var res = "${name}\n\n${map}\n\ndivs: ${divitions}";
-                if(trueish(feature.attributes.hq)){
+                  var res = "${name}\n\n${map}\n\ndivs: ${divitions}";
+                  if(trueish(feature.attributes.hq)){
                   res += ", HQ";
-                }
-                if(trueish(feature.attributes.ab)){
-                  res += ", AB";
-                }
-                if(trueish(feature.attributes.aa)){
-                  res += ", AA";
-                }
-                if(trueish(feature.attributes.fob)){
-                  res += ", FOB";
-                }
+                  }
+                  if(trueish(feature.attributes.ab)){
+                      res += ", AB";
+                  }
+                  if(trueish(feature.attributes.aa)){
+                      res += ", AA";
+                  }
+                  if(trueish(feature.attributes.fob)){
+                      res += ", FOB";
+                  }
 
-                return res;
-              }
-            },
+                  return res;
+              },
+            getColor: function(feature){
+
+            }
+        },
             rules: [
                      new OpenLayers.Rule({
                        minScaleDenominator: 96000000,
@@ -299,7 +315,7 @@ $(document).ready(  function (){
                          value: "star"
                        }),
                        symbolizer: {
-                         fillColor:"#550000", strokeColor: "#990000"
+                         fillColor: "#550000", strokeColor: "#990000"
                        }
                     }),
                     new OpenLayers.Rule({
@@ -309,15 +325,54 @@ $(document).ready(  function (){
                         value: "gld"
                       }),
                        symbolizer: {
-                         fillColor:"#000055", strokeColor: "#000099"
+                         fillColor: "#000055", strokeColor: "#000099"
                        }
+                    }),
+                new OpenLayers.Rule({
+                        filter: new OpenLayers.Filter.Logical({
+                            filters: [
+                                new OpenLayers.Filter.Comparison({
+                                    type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                                    property: "search",
+                                    value: true
+                                }),
+                                new OpenLayers.Filter.Comparison({
+                                    type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                                    property: "army",
+                                    value: "star"
+                                })],
+                            type: OpenLayers.Filter.Logical.AND
+                        }),
+                        symbolizer: {
+                            fillColor: "#EE0000"
+                        }
+                    }),
+                new OpenLayers.Rule({
+                        filter: new OpenLayers.Filter.Logical({
+                            filters: [
+                                new OpenLayers.Filter.Comparison({
+                                    type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                                    property: "search",
+                                    value: true
+                                }),
+                                new OpenLayers.Filter.Comparison({
+                                    type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                                    property: "army",
+                                    value: "gld"
+                                })],
+                            type: OpenLayers.Filter.Logical.AND
+                        }),
+                        symbolizer: {
+                            fillColor: "#0000EE"
+                        }
                     })
                   ]
            }
     );
 
     territories = new OpenLayers.Layer.Vector("Territories", {
-        styleMap: new OpenLayers.StyleMap(style)
+        styleMap: new OpenLayers.StyleMap(style),
+        rendererOptions: {yOrdering: true}
     });
 
 
