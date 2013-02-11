@@ -65,7 +65,7 @@ var frequencies = function(a) {
  return b;
 }
 var trueish = function(s){
-  return s != null && (s.toLowerCase()  == "true" || s.toLowerCase() == "yes" || s.toLowerCase()  == "1" || s.toLowerCase() == true);
+  return s != null && ( s == true || (typeof(s) == "string" && ( s.toLowerCase()  == "true" || s.toLowerCase() == "yes" || s == "1")));
 }
 
 var theaters = {'australia': 2, 'south america' : 2, 'middle east' : 3, 'africa' : 4, 'north america' : 5, 'europe' : 6, 'asia' : 6};
@@ -124,7 +124,7 @@ var updateWCP  = function(){
 
 }
 
-var map, selectControl, selectedFeature, loadMap, getMap, territories;
+var map, selectControl, selectedFeature, loadMap, getMap, territories, features,dirLayer;
 function onPopupClose(evt) {
     selectControl.unselect(selectedFeature);
 }
@@ -193,7 +193,12 @@ function onFeatureUnselect(feature) {
 var geojson = new OpenLayers.Format.GeoJSON();
 
 $("#save").live("click", function(){
-    $("#saveform").toggle(true);
+    $("#saveform").toggle();
+});
+
+
+$("#tools .attack").live("click", function(){
+    $("#attack").toggle();
 });
 
 $("#saveform a").live("click", function(){
@@ -203,6 +208,8 @@ $("#saveform a").live("click", function(){
     $.post("http://" + window.location.host + "/save",
            {"name" : n, "password" : p, "newmap" : f},
            function(){});
+
+    $(this).closest(".popup").toggle();
     return false;
 });
 
@@ -213,7 +220,7 @@ $("#maps a").live("click", function(){
 
 var highlightTerritory = function(text){
     $(territories.features).each(function(){
-        if(this.attributes.map.toLowerCase().indexOf(text.toLowerCase()) != -1){
+        if((text != "" && text != " " ) && this.attributes.map.toLowerCase().indexOf(text.toLowerCase()) != -1){
             this.attributes.search = true;
         }else{
             this.attributes.search = false;
@@ -222,7 +229,15 @@ var highlightTerritory = function(text){
     territories.redraw();
 };
 
-$("#search form").live("submit", function(){ highlightTerritory($("#mapSearch").val()); return false;})
+$("#search form").live("submit", function(){ highlightTerritory($("#mapSearch").val()); return false;});
+
+$("#attack form").live("submit", function(){ var from = $("#attack #from").val();
+                                             var to = $("#attack #to").val();
+                                             var d = $("#attack #divitions").val();
+                                             attack(from,to,d);
+                                             $(this).closest(".popup").toggle();
+                                             return false;
+                                           });
 
 $(document).ready(  function (){
   $("#map").height($(document).height()*0.9);
@@ -289,20 +304,19 @@ $(document).ready(  function (){
                        }
                     }),
                      new OpenLayers.Rule({
-                       filter: new OpenLayers.Filter.Comparison({
-                         type: OpenLayers.Filter.Comparison.EQUAL_TO,
-                         property: "army",
-                         value: ""
-                       }),
-                       symbolizer: {
-                         fillColor:"#aaaaaa", strokeColor: "#cccccc"
-                       }
-                    }),
-                     new OpenLayers.Rule({
-                       filter: new OpenLayers.Filter.Comparison({
-                         type: OpenLayers.Filter.Comparison.EQUAL_TO,
-                         property: "army",
-                         value: null
+                       filter: new OpenLayers.Filter.Logical({
+                            filters: [
+                                new OpenLayers.Filter.Comparison({
+                                    type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                                    property: "army",
+                                    value: ""
+                                }),
+                                new OpenLayers.Filter.Comparison({
+                                    type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                                    property: "army",
+                                    value: null
+                                })],
+                           type: OpenLayers.Filter.Logical.OR
                        }),
                        symbolizer: {
                          fillColor:"#aaaaaa", strokeColor: "#cccccc"
@@ -331,10 +345,18 @@ $(document).ready(  function (){
                 new OpenLayers.Rule({
                         filter: new OpenLayers.Filter.Logical({
                             filters: [
-                                new OpenLayers.Filter.Comparison({
-                                    type: OpenLayers.Filter.Comparison.EQUAL_TO,
-                                    property: "search",
-                                    value: true
+                                new OpenLayers.Filter.Logical({
+                                    filters: [
+                                        new OpenLayers.Filter.Comparison({
+                                            type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                                            property: "search",
+                                            value: true
+                                        }),new OpenLayers.Filter.Comparison({
+                                            type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                                            property: "underAttackAnnimation",
+                                            value: true
+                                        })],
+                                    type: OpenLayers.Filter.Logical.OR
                                 }),
                                 new OpenLayers.Filter.Comparison({
                                     type: OpenLayers.Filter.Comparison.EQUAL_TO,
@@ -344,16 +366,25 @@ $(document).ready(  function (){
                             type: OpenLayers.Filter.Logical.AND
                         }),
                         symbolizer: {
-                            fillColor: "#EE0000"
+                            fillColor: "#EE0000",
+                            graphicZIndex: 999
                         }
                     }),
                 new OpenLayers.Rule({
                         filter: new OpenLayers.Filter.Logical({
                             filters: [
-                                new OpenLayers.Filter.Comparison({
-                                    type: OpenLayers.Filter.Comparison.EQUAL_TO,
-                                    property: "search",
-                                    value: true
+                                new OpenLayers.Filter.Logical({
+                                    filters: [
+                                        new OpenLayers.Filter.Comparison({
+                                            type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                                            property: "search",
+                                            value: true
+                                        }),new OpenLayers.Filter.Comparison({
+                                            type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                                            property: "underAttackAnnimation",
+                                            value: true
+                                        })],
+                                    type: OpenLayers.Filter.Logical.OR
                                 }),
                                 new OpenLayers.Filter.Comparison({
                                     type: OpenLayers.Filter.Comparison.EQUAL_TO,
@@ -363,7 +394,8 @@ $(document).ready(  function (){
                             type: OpenLayers.Filter.Logical.AND
                         }),
                         symbolizer: {
-                            fillColor: "#0000EE"
+                            fillColor: "#0000EE",
+                            graphicZIndex: 999
                         }
                     })
                   ]
@@ -387,6 +419,64 @@ $(document).ready(  function (){
         updateWCP();
     }
 
+    OpenLayers.Renderer.symbol.arrow = [0,2, 1,0, 2,2, 1,0, 0,2];
+    features = new OpenLayers.Layer.Vector("Features", {
+        styleMap: new OpenLayers.StyleMap(new OpenLayers.Style({
+            strokeOpacity: 1,
+            strokeWidth: 6,
+            strokeColor: "#000000",
+            pointRadius: 6,
+            fontColor: "white",
+            fontSize: "16px",
+            fontFamily: "Courier New, monospace",
+            labelOutlineColor: "black",
+            labelOutlineWidth: 1
+        }, {
+        rules: [
+            new OpenLayers.Rule({
+                filter: new OpenLayers.Filter.Comparison({
+                    type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                    property: "showlabel",
+                    value: true
+                }),
+                symbolizer: {
+                    label : "${divitions}",
+                    pointRadius: 0
+                            }
+            }),
+            new OpenLayers.Rule({
+                filter: new OpenLayers.Filter.Comparison({
+                    type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                    property: "arrow",
+                    value: true
+                }),
+                symbolizer: {
+                    graphicName:"arrow",
+                    rotation : "${angle}",
+                    strokeWidth: "8"
+                            }
+            }),
+            new OpenLayers.Rule({
+                filter: new OpenLayers.Filter.Comparison({
+                    type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                    property: "army",
+                    value: "star"
+                }),
+                symbolizer: {strokeColor: "#DD0000"
+                            }
+            }),
+            new OpenLayers.Rule({
+                filter: new OpenLayers.Filter.Comparison({
+                    type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                    property: "army",
+                    value: "gld"
+                }),
+                symbolizer: { strokeColor: "#0000DD"
+                            }
+            })
+        ]})),
+        rendererOptions: {yOrdering: true}
+    });
 
     getMap("latest");
 
@@ -394,9 +484,67 @@ $(document).ready(  function (){
    map.addControl(selectControl);
    selectControl.activate()
 
-   map.addLayers([basemap, territories]);
+   map.addLayers([basemap, territories, features]);
    map.addControl(new OpenLayers.Control.LayerSwitcher());
    map.zoomToMaxExtent();
    updateWCP();
 }
 );
+
+var getTerritory = function(name){
+    if(name == null || name == ""){
+        return false;
+    }else{
+        return $(territories.features).filter(function(){ return this.attributes.name.toLowerCase().indexOf(name.toLowerCase()) != -1 })[0];
+    }
+}
+
+
+var attackTimer;
+
+function startAttackAnimation() {
+    if (!attackTimer) {
+        var f = function(){
+            $(territories.features).filter(function(){ return this.attributes.underAttack == true }).each(function(){this.attributes.underAttackAnnimation = !trueish(this.attributes.underAttackAnnimation);})
+            territories.redraw();
+        }
+        f();
+        attackTimer = window.setInterval(f, 1 * 1000);
+    }
+}
+
+function stopAttackAnimation() {
+    window.clearInterval(attackTimer);
+    attackTimer = null;
+}
+
+
+var attack = function (from, to, divitions){
+
+    try{
+
+        var t1 = getTerritory(from);
+        var t2 = getTerritory(to);
+        var p1 = t1.geometry.getCentroid();
+        var p2 = t2.geometry.getCentroid();
+        var ls = new OpenLayers.Feature.Vector(new OpenLayers.Geometry.LineString([p1,p2]));
+        var cp = getPointOnLine(ls.geometry, 0.5);
+
+        t2.attributes.underAttack = true;
+        ls.attributes.army = t1.attributes.army;
+
+        features.addFeatures([ls, cp]);
+
+        var ep1 = createDirection(ls.geometry,"end",false)[0];
+        ep1.attributes.army = t1.attributes.army;
+        ep1.attributes.arrow = true;
+
+        var ep2 = createDirection(ls.geometry,"middle",false)[0];
+        ep2.attributes.divitions = divitions;
+        ep2.attributes.showlabel = true;
+        features.addFeatures([ep1, ep2]);
+
+        startAttackAnimation();
+    }catch(ex){
+    }
+}

@@ -1,6 +1,10 @@
 .clear{
   clear:both !important;
 }
+.hidden{
+    display:none;
+}
+
 #maps {
     position: absolute;
     top: 0;
@@ -58,18 +62,22 @@ form span input[type="text"] {
 #wcp span.a2 {
   color:#0000AA;
 }
-#save {
+#tools {
   display: block;
   position: absolute;
   bottom: 5px;
   right: 10px;
   z-index: 9999999;
 }
+#tools a{
+    display:block;
+}
+
 #export{
   word-break: break-all;
 }
 
-#saveform{
+.popup{
     display:none;
     position: fixed;
     left:0;
@@ -77,15 +85,14 @@ form span input[type="text"] {
     top:0;
     bottom:0;
     z-index: 99999;
-    margin: 25% 50%;
+    margin: 15% 50%;
 }
 
-#saveform form{
+.popup form{
     background-color:#eeeeee;
     border: 3px solid #666666;
     width: 250px;
-    height: 175px;
 }
-#saveform form > *{
+.popup form > *{
     margin:10px 25px;
 }

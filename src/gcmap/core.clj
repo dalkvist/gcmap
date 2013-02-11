@@ -23,6 +23,7 @@
     (ph/include-css "theme/default/style.css")
     [:script {:src "http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.2.min.js"}]
     (ph/include-js "OpenLayers.debug.js")
+    (ph/include-js "Direction.js")
     (ph/include-js "script2.js")
 
      ]
@@ -35,17 +36,24 @@
   (layout [:h3 (:name m)]
           [:div#maps (for [m (reverse (sort (map :name (get-maps))))]
                        (ph/link-to "#" m))]
-          [:div#search (fh/form-to [:get ""] (fh/text-field "mapSearch") (fh/submit-button "search"))]
+          [:div#search (fh/form-to [:get ""] (fh/label "lseach" "seach map:")(fh/text-field "mapSearch") (fh/submit-button "search"))]
           [:div#map]
           [:div#wcp [:span.a1] [:span.a2]]
-          [:a#save {:href "#"} "save"]
-          [:div#saveform (fh/form-to [:post "save"]
+          [:div#tools
+           [:a.attack {:href "#"} "attacking"]
+           [:a#save {:href "#"} "save"]]
+          [:div#saveform.popup (fh/form-to [:post "save"]
                                      (fh/hidden-field "terr")
                                      (fh/label "lName" "name:")
                                      (fh/text-field "name")
                                      (fh/label "lPass" "password:")
                                      (fh/text-field "password")
                                      (ph/link-to "#save" "save"))]
+          [:div#attack.popup (fh/form-to [:get ""]
+                              (fh/label "lfrom" "attack from:") (fh/text-field "from")
+                              (fh/label "lfrom" "to:") (fh/text-field "to")
+                              (fh/label "ldivitions" "nr divitions:")(fh/text-field "divitions")
+                              (fh/submit-button "ATTACK!"))]
           (ph/javascript-tag (str "var terr = " (j/generate-string m)))))
 
 (noir/defpage "/favicon.ico" [] "")
