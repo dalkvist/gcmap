@@ -471,7 +471,7 @@ $(document).ready(  function (){
                     property: "army",
                     value: "gld"
                 }),
-                symbolizer: { strokeColor: "#0000DD"
+                symbolizer: { strokeColor: "#0044EE"
                             }
             })
         ]})),
