@@ -28,8 +28,8 @@ if (!Object.keys) {
         }
       }
       return result;
-    }
-  })()
+    };
+  })();
 };
 if (!Array.prototype.reduce) {
   Array.prototype.reduce = function reduce(accumulator){
@@ -90,20 +90,20 @@ var updateTerritory = function(){
 
 var updateWCP  = function(){
     if(territories.features.length > 0){
-        var territoryCount = function(army){return filterTerritory("army",army).length};
+        var territoryCount = function(army){return filterTerritory("army",army).length;};
         var divitionCount = function(army){
-                                       var terrs = $.map(filterTerritory('army',army), function(t){return t.attributes.divitions - 0});
+                                       var terrs = $.map(filterTerritory('army',army), function(t){return t.attributes.divitions - 0;});
                                        return terrs.reduce(function(a,b){return a + b;});
                                        };
         var tb = $.map(Object.keys(theaters),function(key){
                                                                     var res = new Object();
                                                                     res.theater = key;
-                                                                    var armys = Object.keys(frequencies($.map(filterTerritory("theater", key), function(t){return t.attributes.army})));
+                                                                    var armys = Object.keys(frequencies($.map(filterTerritory("theater", key), function(t){return t.attributes.army;})));
                                                                     res.army = (armys.length == 1 ? armys[0] : ""); return res;  });
 
         var getArmyCPs = function(army){
-                                    var bonuses = $.map($(tb).filter(function(){return this.army == army}),
-                                                                       function(t){ return theaters[t.theater] - 0 });
+                                    var bonuses = $.map($(tb).filter(function(){return this.army == army;}),
+                                                                       function(t){ return theaters[t.theater] - 0; });
                                     if(bonuses != null && bonuses.length > 0 ){
                                       bonuses = bonuses.reduce(function(a,b){return a + b;});
                                     }else{
@@ -124,7 +124,7 @@ var updateWCP  = function(){
 
 }
 
-var map, selectControl, selectedFeature, loadMap, getMap, territories, features,dirLayer;
+var map, selectControl, selectedFeature, loadMap, getMap, territories, features;
 function onPopupClose(evt) {
     selectControl.unselect(selectedFeature);
 }
@@ -409,15 +409,15 @@ $(document).ready(  function (){
 
 
     getMap = function(name){
-        $.get("http://" + window.location.host + "/map/" +  name, function(data){ loadMap(data)});
-    }
+        $.get("http://" + window.location.host + "/map/" +  name, function(data){ loadMap(data);});
+    };
 
     loadMap = function(data){
         $("h3").text(data.name);
         territories.removeAllFeatures();
         territories.addFeatures(geojson.read(data));
         updateWCP();
-    }
+    };
 
     OpenLayers.Renderer.symbol.arrow = [0,2, 1,0, 2,2, 1,0, 0,2];
     features = new OpenLayers.Layer.Vector("Features", {
@@ -480,9 +480,9 @@ $(document).ready(  function (){
 
     getMap("latest");
 
-   selectControl = new OpenLayers.Control.SelectFeature(territories, {hover:false,box:false,onSelect: onFeatureSelect, onUnselect: onFeatureUnselect})
+   selectControl = new OpenLayers.Control.SelectFeature(territories, {hover:false,box:false,onSelect: onFeatureSelect, onUnselect: onFeatureUnselect});
    map.addControl(selectControl);
-   selectControl.activate()
+   selectControl.activate();
 
    map.addLayers([basemap, territories, features]);
    map.addControl(new OpenLayers.Control.LayerSwitcher());
@@ -495,7 +495,7 @@ var getTerritory = function(name){
     if(name == null || name == ""){
         return false;
     }else{
-        return $(territories.features).filter(function(){ return this.attributes.name.toLowerCase().indexOf(name.toLowerCase()) != -1 })[0];
+        return $(territories.features).filter(function(){ return this.attributes.name.toLowerCase().indexOf(name.toLowerCase()) != -1; })[0];
     }
 }
 
@@ -505,9 +505,10 @@ var attackTimer;
 function startAttackAnimation() {
     if (!attackTimer) {
         var f = function(){
-            $(territories.features).filter(function(){ return this.attributes.underAttack == true }).each(function(){this.attributes.underAttackAnnimation = !trueish(this.attributes.underAttackAnnimation);})
+            $(territories.features).filter(function(){ return this.attributes.underAttack == true; })
+                .each(function(){this.attributes.underAttackAnnimation = !trueish(this.attributes.underAttackAnnimation);});
             territories.redraw();
-        }
+        };
         f();
         attackTimer = window.setInterval(f, 1 * 1000);
     }
@@ -547,4 +548,4 @@ var attack = function (from, to, divitions){
         startAttackAnimation();
     }catch(ex){
     }
-}
+};
