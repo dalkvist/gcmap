@@ -528,6 +528,7 @@ var attack = function (from, to, divitions){
         var t2 = getTerritory(to);
         var p1 = t1.geometry.getCentroid();
         var p2 = t2.geometry.getCentroid();
+        p2 = getPointOnLine(new OpenLayers.Geometry.LineString([p1,p2]),0.75).geometry;
         var ls = new OpenLayers.Feature.Vector(new OpenLayers.Geometry.LineString([p1,p2]));
         var cp = getPointOnLine(ls.geometry, 0.5);
 
