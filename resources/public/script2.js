@@ -525,28 +525,32 @@ var attack = function (from, to, divitions){
     try{
 
         var t1 = getTerritory(from);
-        var t2 = getTerritory(to);
-        var p1 = t1.geometry.getCentroid();
-        var p2 = t2.geometry.getCentroid();
-        p2 = getPointOnLine(new OpenLayers.Geometry.LineString([p1,p2]),0.75).geometry;
-        var ls = new OpenLayers.Feature.Vector(new OpenLayers.Geometry.LineString([p1,p2]));
-        var cp = getPointOnLine(ls.geometry, 0.5);
 
-        t2.attributes.underAttack = true;
-        ls.attributes.army = t1.attributes.army;
+        if(divitions + 1 <=  t1.attributes.divitions){
+            var t2 = getTerritory(to);
+            var p1 = t1.geometry.getCentroid();
+            var p2 = t2.geometry.getCentroid();
+            p2 = getPointOnLine(new OpenLayers.Geometry.LineString([p1,p2]),0.75).geometry;
+            var ls = new OpenLayers.Feature.Vector(new OpenLayers.Geometry.LineString([p1,p2]));
+            var cp = getPointOnLine(ls.geometry, 0.5);
 
-        features.addFeatures([ls, cp]);
+            t1.attributes.divitions = t1.attributes.divitions - divitions;
+            t2.attributes.underAttack = true;
+            ls.attributes.army = t1.attributes.army;
 
-        var ep1 = createDirection(ls.geometry,"end",false)[0];
-        ep1.attributes.army = t1.attributes.army;
-        ep1.attributes.arrow = true;
+            features.addFeatures([ls, cp]);
 
-        var ep2 = createDirection(ls.geometry,"middle",false)[0];
-        ep2.attributes.divitions = divitions;
-        ep2.attributes.showlabel = true;
-        features.addFeatures([ep1, ep2]);
+            var ep1 = createDirection(ls.geometry,"end",false)[0];
+            ep1.attributes.army = t1.attributes.army;
+            ep1.attributes.arrow = true;
 
-        startAttackAnimation();
+            var ep2 = createDirection(ls.geometry,"middle",false)[0];
+            ep2.attributes.divitions = divitions;
+            ep2.attributes.showlabel = true;
+            features.addFeatures([ep1, ep2]);
+
+            startAttackAnimation();
+        }
     }catch(ex){
     }
 };
