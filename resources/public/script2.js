@@ -124,71 +124,88 @@ var updateWCP  = function(){
 
 }
 
-var map, selectControl, selectedFeature, loadMap, getMap, territories, features;
+var map, selectControl, selectedFeature, loadMap, getMap, territories, featuresm, mf;
+var editAttributes = false;
+var editGeometry = false;
 function onPopupClose(evt) {
     selectControl.unselect(selectedFeature);
 }
 function onFeatureSelect(feature) {
     selectedFeature = feature;
-    popup = new OpenLayers.Popup.FramedCloud("territory",
-                             feature.geometry.getBounds().getCenterLonLat(),
-                             null,
-                             "<form>"+
-                             "<span>"+
-                             "<label>territory name</label>"+
-                             "<input type='text' name='name' value='"+ feature.attributes.name +"' />" +
-                             "</span>"+
-                             "<span>"+
-                             "<label>theater</label>"+
-                             "<input type='text' name='theater' value='"+ feature.attributes.theater +"' />" +
-                             "</span>"+
-                             "<span>"+
-                             "<label>bf3 map</label>"+
-                             "<input type='text' name='map' value='"+ feature.attributes.map +"' />" +
-                             "</span>"+
-                             "<span>"+
-                             "<label>controlling army</label>"+
-                             "<input type='text' name='army' value='"+ feature.attributes.army +"' />" +
-                             "</span>"+
-                             "<span>"+
-                             "<label>nr of divitions</label>"+
-                             "<input type='text' name='divitions' value='"+ feature.attributes.divitions +"' />" +
-                             "</span>"+
-                             "<span>"+
-                             "<label>HQ</label>"+
-                             "<input type='text' name='hq' value='"+ feature.attributes.hq +"' />" +
-                             "</span>"+
-                             "<span>"+
-                             "<label>Air base</label>"+
-                             "<input type='text' name='ab' value='"+ feature.attributes.ab +"' />" +
-                             "</span>"+
-                             "<span>"+
-                             "<label>Anti air</label>"+
-                             "<input type='text' name='aa' value='"+ feature.attributes.aa +"' />" +
-                             "</span>"+
-                             "<span>"+
-                             "<label>Forward operating base</label>"+
-                             "<input type='text' name='fob' value='"+ feature.attributes.fob +"' />" +
-                             "</span>"+
-                             "<span>"+
-                             "<label>Label offset N-S</label>"+
-                             "<input type='text' name='yOffset' value='"+ feature.attributes.yOffset +"' />" +
-                             "</span>"+
-                             "<span>"+
-                             "<label>Label offset E-W</label>"+
-                             "<input type='text' name='xOffset' value='"+ feature.attributes.xOffset +"' />" +
-                             "</span>"+
-                             "<input type='button' name='save' value='save' onClick='updateTerritory()'/>" +
-                             "<span class='clear'></span>"+
-                             "</form>",
-                             null, true, onPopupClose);
-    feature.popup = popup;
-    map.addPopup(popup);
+    if(editAttributes == true){
+        popup = new OpenLayers.Popup.FramedCloud("territory",
+                                                 feature.geometry.getBounds().getCenterLonLat(),
+                                                 null,
+                                                 "<form>"+
+                                                 "<span>"+
+                                                 "<label>territory name</label>"+
+                                                 "<input type='text' name='name' value='"+ feature.attributes.name +"' />" +
+                                                 "</span>"+
+                                                 "<span>"+
+                                                 "<label>theater</label>"+
+                                                 "<input type='text' name='theater' value='"+ feature.attributes.theater +"' />" +
+                                                 "</span>"+
+                                                 "<span>"+
+                                                 "<label>bf3 map</label>"+
+                                                 "<input type='text' name='map' value='"+ feature.attributes.map +"' />" +
+                                                 "</span>"+
+                                                 "<span>"+
+                                                 "<label>controlling army</label>"+
+                                                 "<input type='text' name='army' value='"+ feature.attributes.army +"' />" +
+                                                 "</span>"+
+                                                 "<span>"+
+                                                 "<label>nr of divitions</label>"+
+                                                 "<input type='text' name='divitions' value='"+ feature.attributes.divitions +"' />" +
+                                                 "</span>"+
+                                                 "<span>"+
+                                                 "<label>HQ</label>"+
+                                                 "<input type='text' name='hq' value='"+ feature.attributes.hq +"' />" +
+                                                 "</span>"+
+                                                 "<span>"+
+                                                 "<label>Air base</label>"+
+                                                 "<input type='text' name='ab' value='"+ feature.attributes.ab +"' />" +
+                                                 "</span>"+
+                                                 "<span>"+
+                                                 "<label>Anti air</label>"+
+                                                 "<input type='text' name='aa' value='"+ feature.attributes.aa +"' />" +
+                                                 "</span>"+
+                                                 "<span>"+
+                                                 "<label>Forward operating base</label>"+
+                                                 "<input type='text' name='fob' value='"+ feature.attributes.fob +"' />" +
+                                                 "</span>"+
+                                                 "<span>"+
+                                                 "<label>Label offset N-S</label>"+
+                                                 "<input type='text' name='yOffset' value='"+ feature.attributes.yOffset +"' />" +
+                                                 "</span>"+
+                                                 "<span>"+
+                                                 "<label>Label offset E-W</label>"+
+                                                 "<input type='text' name='xOffset' value='"+ feature.attributes.xOffset +"' />" +
+                                                 "</span>"+
+                                                 "<input type='button' name='save' value='save' onClick='updateTerritory()'/>" +
+                                                 "<span class='clear'></span>"+
+                                                 "</form>",
+                                                 null, true, onPopupClose);
+        feature.popup = popup;
+        map.addPopup(popup);
+    }
+    if(editGeometry == true){
+        if(mf.feature){
+            mf.unselectFeature();
+        }
+        mf.selectFeature(selectedFeature);
+    }
 }
 function onFeatureUnselect(feature) {
-    map.removePopup(feature.popup);
-    feature.popup.destroy();
-    feature.popup = null;
+    if(editAttributes == true){
+        map.removePopup(feature.popup);
+        feature.popup.destroy();
+        feature.popup = null;
+    }
+    if(editGeometry == true){
+        if(mf.feature){
+            mf.unselectFeature();
+        }
+    }
 }
 var geojson = new OpenLayers.Format.GeoJSON();
 
@@ -260,7 +277,6 @@ $(document).ready(  function (){
             pointerEvents: "visiblePainted",
             // label with \n linebreaks
             label : "${getLabel}",
-
             fontColor: "white",
             fontSize: "12px",
             fontFamily: "Courier New, monospace",
@@ -269,21 +285,23 @@ $(document).ready(  function (){
             labelOutlineColor: "black",
             labelOutlineWidth: 1
         }, {context: {
-              getLabel: function(feature){
-                  var res = "${name}\n\n${map}\n\ndivs: ${divitions}";
-                  if(trueish(feature.attributes.hq)){
-                  res += ", HQ";
+              getLabel: function(feature,x,y){
+                  var res = "";
+                  if(feature.geometry && feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon"){
+                      res = "${name}\n\n${map}\n\ndivs: ${divitions}";
+                      if(trueish(feature.attributes.hq)){
+                          res += ", HQ";
+                      }
+                      if(trueish(feature.attributes.ab)){
+                          res += ", AB";
+                      }
+                      if(trueish(feature.attributes.aa)){
+                          res += ", AA";
+                      }
+                      if(trueish(feature.attributes.fob)){
+                          res += ", FOB";
+                      }
                   }
-                  if(trueish(feature.attributes.ab)){
-                      res += ", AB";
-                  }
-                  if(trueish(feature.attributes.aa)){
-                      res += ", AA";
-                  }
-                  if(trueish(feature.attributes.fob)){
-                      res += ", FOB";
-                  }
-
                   return res;
               },
             getColor: function(feature){
@@ -291,12 +309,12 @@ $(document).ready(  function (){
             }
         },
             rules: [
-                     new OpenLayers.Rule({
-                       minScaleDenominator: 96000000,
-                       symbolizer: {
-                         fontSize: "9px"
-                       }
-                    }),
+                new OpenLayers.Rule({
+                    minScaleDenominator: 96000000,
+                    symbolizer: {
+                        fontSize: "9px"
+                    }
+                }),
                      new OpenLayers.Rule({
                        maxScaleDenominator: 96000000,
                        symbolizer: {
@@ -402,9 +420,15 @@ $(document).ready(  function (){
            }
     );
 
+    var selectedStyle = style.clone();
+    selectedStyle.defaultStyle.graphicZIndex = 9999;
+    selectedStyle.isDefault = false;
+
+    style.isDefault = true;
+
     territories = new OpenLayers.Layer.Vector("Territories", {
-        styleMap: new OpenLayers.StyleMap(style),
-        rendererOptions: {yOrdering: true}
+        styleMap: new OpenLayers.StyleMap({"default": style, "select": selectedStyle}),
+        rendererOptions: {yOrdering: false}
     });
 
 
@@ -480,14 +504,21 @@ $(document).ready(  function (){
 
     getMap("latest");
 
+   map.addLayers([basemap, territories, features]);
+   features.setVisibility(false);
+   map.addControl(new OpenLayers.Control.LayerSwitcher());
+   map.zoomToMaxExtent();
+
    selectControl = new OpenLayers.Control.SelectFeature(territories, {hover:false,box:false,onSelect: onFeatureSelect, onUnselect: onFeatureUnselect});
    map.addControl(selectControl);
    selectControl.activate();
 
-   map.addLayers([basemap, territories, features]);
-   map.addControl(new OpenLayers.Control.LayerSwitcher());
-   map.zoomToMaxExtent();
+   mf = new OpenLayers.Control.ModifyFeature(territories, {standalone : true});
+   map.addControl(mf);
+   mf.activate();
+
    updateWCP();
+
 }
 );
 
@@ -508,6 +539,7 @@ function startAttackAnimation() {
             $(territories.features).filter(function(){ return this.attributes.underAttack == true; })
                 .each(function(){this.attributes.underAttackAnnimation = !trueish(this.attributes.underAttackAnnimation);});
             territories.redraw();
+            features.setVisibility(true);
         };
         f();
         attackTimer = window.setInterval(f, 1 * 1000);
@@ -517,6 +549,7 @@ function startAttackAnimation() {
 function stopAttackAnimation() {
     window.clearInterval(attackTimer);
     attackTimer = null;
+    features.display(false);
 }
 
 
