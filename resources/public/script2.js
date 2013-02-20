@@ -69,7 +69,7 @@ var trueish = function(s){
 }
 
 var theaters = {'australia': 2, 'south america' : 2, 'middle east' : 3, 'africa' : 4, 'north america' : 5, 'europe' : 6, 'asia' : 6};
-var filterTerritory = function(key, value){return  $(map.layers[1].features).filter(function(){return this.attributes[key] == value})};
+var filterTerritory = function(key, value){return  $(map.layers[1].features).filter(function(){return this.attributes[key] == value;});};
 
 var updateTerritory = function(){
   selectedFeature.attributes.name = $("#territory input[name='name']").val();
