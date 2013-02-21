@@ -272,8 +272,8 @@ $(document).ready(  function (){
     var basemap = new OpenLayers.Layer.Image(
         'map',
         'img/map-connections.jpg',
-        new OpenLayers.Bounds(-180, -88.759, 180, 88.759),
-        new OpenLayers.Size(1920, 860 ),
+        new OpenLayers.Bounds(-180,-88.759,180,102),
+        new OpenLayers.Size(1920 / 2, 860 / 2 ),
         {numZoomLevels: 3}
     );
 
@@ -524,7 +524,7 @@ $(document).ready(  function (){
    map.addLayers([basemap, territories, features]);
    features.setVisibility(false);
    map.addControl(new OpenLayers.Control.LayerSwitcher());
-   map.zoomToMaxExtent();
+   map.zoomTo(1);
 
    selectControl = new OpenLayers.Control.SelectFeature([territories, features], {hover:false,box:false,onSelect: onFeatureSelect, onUnselect: onFeatureUnselect});
    map.addControl(selectControl);
