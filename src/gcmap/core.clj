@@ -51,6 +51,15 @@
               (fh/label "lfrom" "to:") (fh/text-field "to")
               (fh/label "ldivitions" "nr divitions:")(fh/text-field "divitions")
               (fh/submit-button "ATTACK!"))]
+           [:div#edit
+            [:a.edit {:href "#"} "edit"]
+            (fh/form-to [:get ""]
+              [:h5 "edit"]
+              (fh/label "lform" "nothing") (fh/radio-button "edit" true "no")
+              (fh/label "lform" "territory")(fh/radio-button "edit" false "territory")
+              [:div.info]
+              (fh/submit-button "update"))
+            [:div.clear]]
            [:div#saveform
             [:a#save {:href "#"} "save"]
             (fh/form-to [:post "save"]
@@ -59,7 +68,7 @@
               (fh/text-field "name")
               (fh/label "lPass" "password:")
               (fh/text-field "password")
-              (ph/link-to "#save" "save"))]]
+              (fh/submit-button "save"))]]
            (ph/javascript-tag (str "var terr = " (j/generate-string m)))))
 
 (noir/defpage "/favicon.ico" [] "")

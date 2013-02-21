@@ -72,20 +72,21 @@ var theaters = {'australia': 2, 'south america' : 2, 'middle east' : 3, 'africa'
 var filterTerritory = function(key, value){return  $(map.layers[1].features).filter(function(){return this.attributes[key] == value;});};
 
 var updateTerritory = function(){
-  selectedFeature.attributes.name = $("#territory input[name='name']").val();
-  selectedFeature.attributes.theater = $("#territory input[name='theater']").val();
-  selectedFeature.attributes.map = $("#territory input[name='map']").val();
-  selectedFeature.attributes.army = $("#territory input[name='army']").val();
-  selectedFeature.attributes.divitions = $("#territory input[name='divitions']").val();
-  selectedFeature.attributes.hq = $("#territory input[name='hq']").val();
-  selectedFeature.attributes.ab = $("#territory input[name='ab']").val();
-  selectedFeature.attributes.aa = $("#territory input[name='aa']").val();
-  selectedFeature.attributes.fob = $("#territory input[name='fob']").val();
-  selectedFeature.attributes.xOffset = $("#territory input[name='xOffset']").val();
-  selectedFeature.attributes.yOffset = $("#territory input[name='yOffset']").val();
-  if(selectedFeature.attributes.xOffset ==  null || selectedFeature.attributes.xOffset == ""){ selectedFeature.attributes.xOffset = "0";}
-  if(selectedFeature.attributes.yOffset ==  null || selectedFeature.attributes.yOffset == ""){ selectedFeature.attributes.yOffset = "0";}
-  updateWCP();
+    selectedFeature.attributes.name = $("#edit input[name='name']").val();
+    selectedFeature.attributes.theater = $("#edit input[name='theater']").val();
+    selectedFeature.attributes.map = $("#edit input[name='map']").val();
+    selectedFeature.attributes.army = $("#edit input[name='army']").val();
+    selectedFeature.attributes.divitions = $("#edit input[name='divitions']").val();
+    selectedFeature.attributes.hq = $("#edit input[name='hq']").val();
+    selectedFeature.attributes.ab = $("#edit input[name='ab']").val();
+    selectedFeature.attributes.aa = $("#edit input[name='aa']").val();
+    selectedFeature.attributes.fob = $("#edit input[name='fob']").val();
+    selectedFeature.attributes.xOffset = $("#edit input[name='xOffset']").val();
+    selectedFeature.attributes.yOffset = $("#edit input[name='yOffset']").val();
+    if(selectedFeature.attributes.xOffset ==  null || selectedFeature.attributes.xOffset == ""){ selectedFeature.attributes.xOffset = "0";}
+    if(selectedFeature.attributes.yOffset ==  null || selectedFeature.attributes.yOffset == ""){ selectedFeature.attributes.yOffset = "0";}
+    updateWCP();
+    territories.redraw();
 };
 
 var updateWCP  = function(){
@@ -132,61 +133,26 @@ function onPopupClose(evt) {
 }
 function onFeatureSelect(feature) {
     selectedFeature = feature;
+    feature.attributes.selected = true;
+    territories.redraw();
     if(editAttributes == true){
-        popup = new OpenLayers.Popup.FramedCloud("territory",
-                                                 feature.geometry.getBounds().getCenterLonLat(),
-                                                 null,
-                                                 "<form>"+
-                                                 "<span>"+
-                                                 "<label>territory name</label>"+
-                                                 "<input type='text' name='name' value='"+ feature.attributes.name +"' />" +
-                                                 "</span>"+
-                                                 "<span>"+
-                                                 "<label>theater</label>"+
-                                                 "<input type='text' name='theater' value='"+ feature.attributes.theater +"' />" +
-                                                 "</span>"+
-                                                 "<span>"+
-                                                 "<label>bf3 map</label>"+
-                                                 "<input type='text' name='map' value='"+ feature.attributes.map +"' />" +
-                                                 "</span>"+
-                                                 "<span>"+
-                                                 "<label>controlling army</label>"+
-                                                 "<input type='text' name='army' value='"+ feature.attributes.army +"' />" +
-                                                 "</span>"+
-                                                 "<span>"+
-                                                 "<label>nr of divitions</label>"+
-                                                 "<input type='text' name='divitions' value='"+ feature.attributes.divitions +"' />" +
-                                                 "</span>"+
-                                                 "<span>"+
-                                                 "<label>HQ</label>"+
-                                                 "<input type='text' name='hq' value='"+ feature.attributes.hq +"' />" +
-                                                 "</span>"+
-                                                 "<span>"+
-                                                 "<label>Air base</label>"+
-                                                 "<input type='text' name='ab' value='"+ feature.attributes.ab +"' />" +
-                                                 "</span>"+
-                                                 "<span>"+
-                                                 "<label>Anti air</label>"+
-                                                 "<input type='text' name='aa' value='"+ feature.attributes.aa +"' />" +
-                                                 "</span>"+
-                                                 "<span>"+
-                                                 "<label>Forward operating base</label>"+
-                                                 "<input type='text' name='fob' value='"+ feature.attributes.fob +"' />" +
-                                                 "</span>"+
-                                                 "<span>"+
-                                                 "<label>Label offset N-S</label>"+
-                                                 "<input type='text' name='yOffset' value='"+ feature.attributes.yOffset +"' />" +
-                                                 "</span>"+
-                                                 "<span>"+
-                                                 "<label>Label offset E-W</label>"+
-                                                 "<input type='text' name='xOffset' value='"+ feature.attributes.xOffset +"' />" +
-                                                 "</span>"+
-                                                 "<input type='button' name='save' value='save' onClick='updateTerritory()'/>" +
-                                                 "<span class='clear'></span>"+
-                                                 "</form>",
-                                                 null, true, onPopupClose);
-        feature.popup = popup;
-        map.addPopup(popup);
+        var info = $("#edit form .info");
+        $(Object.keys(selectedFeature.attributes)).sort().each(
+            function(){
+                var key = this;
+                var val = selectedFeature.attributes[this];
+                info.append("<span>" +
+                                             "<label> " +
+                                             key +
+                                             "</label>"  +
+                                             "<input name='" +
+                                             key +
+                                             "' type='text' value='" +
+                                             val +
+                                             "' />" +
+                                             "</span>");
+            });
+        $("#edit form input[type='submit']").toggleClass('hidden');
     }
     if(editGeometry == true){
         if(mf.feature){
@@ -196,10 +162,11 @@ function onFeatureSelect(feature) {
     }
 }
 function onFeatureUnselect(feature) {
+    feature.attributes.selected = false;
+    territories.redraw();
     if(editAttributes == true){
-        map.removePopup(feature.popup);
-        feature.popup.destroy();
-        feature.popup = null;
+        $("#edit form .info").children().remove();
+        $("#edit form input[type='submit']").toggleClass('hidden');
     }
     if(editGeometry == true){
         if(mf.feature){
@@ -207,17 +174,8 @@ function onFeatureUnselect(feature) {
         }
     }
 }
-var geojson = new OpenLayers.Format.GeoJSON();
 
-$("#saveform a").live("click", function(){
-    var n = $("#name").val();
-    var p = $("#password").val();
-    var f = geojson.write(territories.features);
-    $.post("http://" + window.location.host + "/save",
-           {"name" : n, "password" : p, "newmap" : f},
-           function(){});
-    return false;
-});
+var geojson = new OpenLayers.Format.GeoJSON();
 
 $("#maps a").live("click", function(){
     getMap($(this).text());
@@ -249,7 +207,36 @@ $("#attack form").live("submit", function(){ var from = $("#attack #from").val()
                                              return false;
                                            });
 
+
+$("#sidebar #edit input[type='radio']").live("click", function(){
+    var selected = $("#sidebar #edit :checked").attr('value');
+    if(selected == "territory"){
+        selectControl.activate();
+        editAttributes = true;
+    }else{
+        selectControl.unselectAll();
+        selectControl.deactivate();
+        editAttributes = false;
+    }
+});
+
+$("#edit form").live("submit", function(){
+    updateTerritory();
+    return false;
+});
+
+$("#saveform form").live("submit", function(){
+    var n = $("#name").val();
+    var p = $("#password").val();
+    var f = geojson.write(territories.features);
+    $.post("http://" + window.location.host + "/save",
+           {"name" : n, "password" : p, "newmap" : f},
+           function(){});
+    return false;
+});
+
 $(document).ready(  function (){
+    $("#edit form input[type='submit']").toggleClass('hidden');
   $("#map").height($(document).height()*0.9);
   $("#map").width(($(document).width()*0.95) - 200);
     map = new OpenLayers.Map('map');
@@ -366,6 +353,10 @@ $(document).ready(  function (){
                                             type: OpenLayers.Filter.Comparison.EQUAL_TO,
                                             property: "underAttackAnnimation",
                                             value: true
+                                        }),new OpenLayers.Filter.Comparison({
+                                            type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                                            property: "selected",
+                                            value: true
                                         })],
                                     type: OpenLayers.Filter.Logical.OR
                                 }),
@@ -394,6 +385,10 @@ $(document).ready(  function (){
                                             type: OpenLayers.Filter.Comparison.EQUAL_TO,
                                             property: "underAttackAnnimation",
                                             value: true
+                                        }),new OpenLayers.Filter.Comparison({
+                                            type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                                            property: "selected",
+                                            value: true
                                         })],
                                     type: OpenLayers.Filter.Logical.OR
                                 }),
@@ -414,7 +409,7 @@ $(document).ready(  function (){
     );
 
     var selectedStyle = style.clone();
-    selectedStyle.defaultStyle.graphicZIndex = 9999;
+    selectedStyle.defaultStyle.graphicZIndex = 9999999;
     selectedStyle.isDefault = false;
 
     style.isDefault = true;

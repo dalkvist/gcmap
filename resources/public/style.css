@@ -2,7 +2,7 @@
   clear:both !important;
 }
 .hidden{
-    display:none;
+    display:none !important;
 }
 
 #maps {
@@ -50,7 +50,7 @@ float:left;
     border-bottom: 3px solid #cccccc;
 }
 form{
-  width:350px;
+
 }
 form > * {
   display: block;
@@ -64,10 +64,25 @@ form span label {
   height:22px;
 }
 form span input[type="text"] {
-  width: 150px;
+  width: 140px;
   display: block;
   float:right;
   height:22px;
+}
+
+#edit form > *{
+display:block;
+float:left;
+}
+
+#edit form label{
+    clear:left;
+    width:75px;
+}
+
+#edit input[type="submit"],
+#edit input[type="button"]{
+    clear:left;
 }
 #wcp{
   display:block;
