@@ -208,6 +208,8 @@ $("#sidebar > div a:first-child").live("click", function(){
 
 $("#search form").live("submit", function(){ highlightTerritory($("#mapSearch").val()); return false;});
 
+$("#search form input[type='reset']").live("click", function(){ highlightTerritory("");});
+
 $("#attack form").live("submit", function(){ var from = $("#attack #from").val();
                                              var to = $("#attack #to").val();
                                              var d = $("#attack #divitions").val();

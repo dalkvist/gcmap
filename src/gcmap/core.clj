@@ -43,7 +43,11 @@
             [:div#wcp [:span.a1] [:span.a2]]]
            [:div#search
             [:a.seach {:href "#"} "seach"]
-            (fh/form-to [:get ""] (fh/label "lseach" "seach map:")(fh/text-field "mapSearch") (fh/submit-button "search"))]
+            (fh/form-to [:get ""]
+              (fh/label "lseach" "seach map:")(fh/text-field "mapSearch")
+              (fh/submit-button "search")
+              (fh/reset-button "clear")
+            [:div.clear])]
            [:div#attack
             [:a.attack {:href "#"} "attacking"]
             (fh/form-to [:get ""]

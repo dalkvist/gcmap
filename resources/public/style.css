@@ -70,6 +70,11 @@ form span input[type="text"] {
   height:22px;
 }
 
+#search input[type='reset'],
+#search input[type='submit']{
+    float:left;
+}
+
 #edit form > *{
 display:block;
 float:left;
