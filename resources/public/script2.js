@@ -152,6 +152,14 @@ function onFeatureSelect(feature) {
                                              "' />" +
                                              "</span>");
             });
+        info.append("<div class='pre'>Edit shape</div>");
+        info.append('<input checked="true" name="geometry" type="radio" value="no">');
+        info.append("<label>False</label>");
+        info.append('<input  name="geometry" type="radio" value="shape">');
+        info.append("<label>Shape</label>");
+        info.append('<input  name="geometry" type="radio" value="position">');
+        info.append("<label>Position</label>");
+
         $("#edit form input[type='submit']").toggleClass('hidden');
     }
     if(editGeometry == true){
@@ -223,6 +231,26 @@ $("#sidebar #edit input[type='radio']").live("click", function(){
 $("#edit form").live("submit", function(){
     updateTerritory();
     return false;
+});
+
+
+$("#edit form input[name='geometry']").live("click", function(){
+    var edit = $(this).attr('value');
+
+    mf.unselectFeature();
+
+    if(edit != "no"){
+        if(edit == "shape"){
+            mf.mode = 1;
+        }
+        if(edit == "position"){
+            mf.mode = 8;
+        }
+        editGeometry = true;
+        mf.selectFeature(selectedFeature);
+    }else{
+           editGeometry = false;
+    }
 });
 
 $("#saveform form").live("submit", function(){

@@ -80,10 +80,21 @@ float:left;
     width:75px;
 }
 
+#edit form span  {
+    width: 100%;
+    height: 30px;
+    display: block;
+}
+
 #edit input[type="submit"],
 #edit input[type="button"]{
     clear:left;
 }
+
+#edit label.pre{
+    margin-right: 8px;
+}
+
 #wcp{
   display:block;
   background-color: white;
