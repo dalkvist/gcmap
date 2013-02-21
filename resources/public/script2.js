@@ -265,11 +265,16 @@ $("#saveform form").live("submit", function(){
     return false;
 });
 
+var updateMapSize = function(){
+  $("#map").height($(window).height()*0.9);
+  $("#map").width(($(window).width()*0.95) - 250);
+};
+
 $(document).ready(  function (){
     $("#edit form input[type='submit']").toggleClass('hidden');
-  $("#map").height($(document).height()*0.9);
-  $("#map").width(($(document).width()*0.95) - 200);
-    map = new OpenLayers.Map('map');
+    updateMapSize();
+    $(window).resize(updateMapSize);
+ map = new OpenLayers.Map('map');
 
     var basemap = new OpenLayers.Layer.Image(
         'map',
