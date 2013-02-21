@@ -227,6 +227,7 @@ $("#sidebar #edit input[type='radio']").live("click", function(){
         selectControl.unselectAll();
         selectControl.deactivate();
         editAttributes = false;
+        editGeometry = false;
     }
 });
 
