@@ -447,7 +447,8 @@ $(document).ready(  function (){
             fontSize: "16px",
             fontFamily: "Courier New, monospace",
             labelOutlineColor: "black",
-            labelOutlineWidth: 1
+            labelOutlineWidth: 1,
+            graphicZIndex: 99999
         }, {
         rules: [
             new OpenLayers.Rule({
@@ -492,7 +493,7 @@ $(document).ready(  function (){
                             }
             })
         ]})),
-        rendererOptions: {yOrdering: true}
+        rendererOptions: {yOrdering: false}
     });
 
     getMap("latest");
@@ -502,9 +503,9 @@ $(document).ready(  function (){
    map.addControl(new OpenLayers.Control.LayerSwitcher());
    map.zoomToMaxExtent();
 
-   selectControl = new OpenLayers.Control.SelectFeature(territories, {hover:false,box:false,onSelect: onFeatureSelect, onUnselect: onFeatureUnselect});
+   selectControl = new OpenLayers.Control.SelectFeature([territories, features], {hover:false,box:false,onSelect: onFeatureSelect, onUnselect: onFeatureUnselect});
    map.addControl(selectControl);
-   selectControl.activate();
+   selectControl.deactivate();
 
    mf = new OpenLayers.Control.ModifyFeature(territories, {standalone : true});
    map.addControl(mf);
