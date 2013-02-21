@@ -72,7 +72,20 @@
               (fh/text-field "name")
               (fh/label "lPass" "password:")
               (fh/text-field "password")
-              (fh/submit-button "save"))]]
+              (fh/submit-button "save"))]
+           [:div#todo
+            [:a#todo {:href "#"} "TODO"]
+            [:h3 "in no particular order"]
+            [:p "move offset, divisions and buildings to points"]
+            [:p "basemap settings: url, bounds, max size"]
+            [:p "map settings: campaign, week, army; name, colors; phase; BD attack, reinforcement etc"]
+            [:p "add/remove territories"]
+            [:p "remove nodes in territory shape"]
+            [:p "change building values to boolean"]
+            [:p "select attack territories based on attacking army"]
+            [:p "wcp theater bonus rule"]
+            [:p "connected(territory 1, territory 2)"]
+            [:p "only allow attacks on connected territories"]]]
            (ph/javascript-tag (str "var terr = " (j/generate-string m)))))
 
 (noir/defpage "/favicon.ico" [] "")
