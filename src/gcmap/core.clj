@@ -80,7 +80,7 @@
            [:div#todo
             [:a#todo {:href "#"} "TODO"]
             [:div.sub
-             [:h3 "in no particular order"]
+             [:h4 "in no particular order"]
              [:p "move offset, divisions and buildings to points"]
              [:p "basemap settings: url, bounds, max size"]
              [:p "map settings: campaign, week, army; name, colors; phase; BD attack, reinforcement etc"]
