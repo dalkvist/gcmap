@@ -43,49 +43,54 @@
             [:div#wcp [:span.a1] [:span.a2]]]
            [:div#search
             [:a.seach {:href "#"} "seach"]
-            (fh/form-to [:get ""]
-              (fh/label "lseach" "seach map:")(fh/text-field "mapSearch")
-              (fh/submit-button "search")
-              (fh/reset-button "clear")
-            [:div.clear])]
+            [:div.sub
+             (fh/form-to [:get ""]
+               (fh/label "lseach" "seach map:")(fh/text-field "mapSearch")
+               (fh/submit-button "search")
+               (fh/reset-button "clear")
+               [:div.clear])]]
            [:div#attack
             [:a.attack {:href "#"} "attacking"]
-            (fh/form-to [:get ""]
-              (fh/label "lfrom" "attack from:") (fh/text-field "from")
-              (fh/label "lfrom" "to:") (fh/text-field "to")
-              (fh/label "ldivitions" "nr divitions:")(fh/text-field "divitions")
-              (fh/submit-button "ATTACK!"))]
+            [:div.sub
+             (fh/form-to [:get ""]
+               (fh/label "lfrom" "attack from:") (fh/text-field "from")
+               (fh/label "lfrom" "to:") (fh/text-field "to")
+               (fh/label "ldivitions" "nr divitions:")(fh/text-field "divitions")
+               (fh/submit-button "ATTACK!"))]]
            [:div#edit
             [:a.edit {:href "#"} "edit"]
-            (fh/form-to [:get ""]
-              [:h5 "edit"]
-              (fh/label "lform" "nothing") (fh/radio-button "edit" true "no")
-              (fh/label "lform" "territory")(fh/radio-button "edit" false "territory")
-              [:div.info]
-              (fh/submit-button "update"))
-            [:div.clear]]
+            [:div.sub
+             (fh/form-to [:get ""]
+               [:h5 "edit"]
+               (fh/label "lform" "nothing") (fh/radio-button "edit" true "no")
+               (fh/label "lform" "territory")(fh/radio-button "edit" false "territory")
+               [:div.info]
+               (fh/submit-button "update"))
+             [:div.clear]]]
            [:div#saveform
             [:a#save {:href "#"} "save"]
-            (fh/form-to [:post "save"]
-              (fh/hidden-field "terr")
-              (fh/label "lName" "name:")
-              (fh/text-field "name")
-              (fh/label "lPass" "password:")
-              (fh/text-field "password")
-              (fh/submit-button "save"))]
+            [:div.sub
+             (fh/form-to [:post "save"]
+               (fh/hidden-field "terr")
+               (fh/label "lName" "name:")
+               (fh/text-field "name")
+               (fh/label "lPass" "password:")
+               (fh/text-field "password")
+               (fh/submit-button "save"))]]
            [:div#todo
             [:a#todo {:href "#"} "TODO"]
-            [:h3 "in no particular order"]
-            [:p "move offset, divisions and buildings to points"]
-            [:p "basemap settings: url, bounds, max size"]
-            [:p "map settings: campaign, week, army; name, colors; phase; BD attack, reinforcement etc"]
-            [:p "add/remove territories"]
-            [:p "remove nodes in territory shape"]
-            [:p "change building values to boolean"]
-            [:p "select attack territories based on attacking army"]
-            [:p "wcp theater bonus rule"]
-            [:p "connected(territory 1, territory 2)"]
-            [:p "only allow attacks on connected territories"]]]
+            [:div.sub
+             [:h3 "in no particular order"]
+             [:p "move offset, divisions and buildings to points"]
+             [:p "basemap settings: url, bounds, max size"]
+             [:p "map settings: campaign, week, army; name, colors; phase; BD attack, reinforcement etc"]
+             [:p "add/remove territories"]
+             [:p "remove nodes in territory shape"]
+             [:p "change building values to boolean"]
+             [:p "select attack territories based on attacking army"]
+             [:p "wcp theater bonus rule"]
+             [:p "connected(territory 1, territory 2)"]
+             [:p "only allow attacks on connected territories"]]]]
            (ph/javascript-tag (str "var terr = " (j/generate-string m)))))
 
 (noir/defpage "/favicon.ico" [] "")

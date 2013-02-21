@@ -31,11 +31,11 @@ background-color: #cccccc;
 float:left;
 }
 
-#sidebar form{
+#sidebar .sub{
     display:none;
 }
 
-#sidebar .selected form
+#sidebar .selected .sub
 {
     display:block;
 }
