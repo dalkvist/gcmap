@@ -36,25 +36,31 @@
   (layout [:h3 (:name m)]
           [:div#maps (for [m (reverse (sort (map :name (get-maps))))]
                        (ph/link-to "#" m))]
-          [:div#search (fh/form-to [:get ""] (fh/label "lseach" "seach map:")(fh/text-field "mapSearch") (fh/submit-button "search"))]
           [:div#map]
-          [:div#wcp [:span.a1] [:span.a2]]
-          [:div#tools
-           [:a.attack {:href "#"} "attacking"]
-           [:a#save {:href "#"} "save"]]
-          [:div#saveform.popup (fh/form-to [:post "save"]
-                                     (fh/hidden-field "terr")
-                                     (fh/label "lName" "name:")
-                                     (fh/text-field "name")
-                                     (fh/label "lPass" "password:")
-                                     (fh/text-field "password")
-                                     (ph/link-to "#save" "save"))]
-          [:div#attack.popup (fh/form-to [:get ""]
-                              (fh/label "lfrom" "attack from:") (fh/text-field "from")
-                              (fh/label "lfrom" "to:") (fh/text-field "to")
-                              (fh/label "ldivitions" "nr divitions:")(fh/text-field "divitions")
-                              (fh/submit-button "ATTACK!"))]
-          (ph/javascript-tag (str "var terr = " (j/generate-string m)))))
+          [:div#sidebar
+           [:div#info.selected
+            [:a.info {:href "#"} "info"]
+            [:div#wcp [:span.a1] [:span.a2]]]
+           [:div#search
+            [:a.seach {:href "#"} "seach"]
+            (fh/form-to [:get ""] (fh/label "lseach" "seach map:")(fh/text-field "mapSearch") (fh/submit-button "search"))]
+           [:div#attack
+            [:a.attack {:href "#"} "attacking"]
+            (fh/form-to [:get ""]
+              (fh/label "lfrom" "attack from:") (fh/text-field "from")
+              (fh/label "lfrom" "to:") (fh/text-field "to")
+              (fh/label "ldivitions" "nr divitions:")(fh/text-field "divitions")
+              (fh/submit-button "ATTACK!"))]
+           [:div#saveform
+            [:a#save {:href "#"} "save"]
+            (fh/form-to [:post "save"]
+              (fh/hidden-field "terr")
+              (fh/label "lName" "name:")
+              (fh/text-field "name")
+              (fh/label "lPass" "password:")
+              (fh/text-field "password")
+              (ph/link-to "#save" "save"))]]
+           (ph/javascript-tag (str "var terr = " (j/generate-string m)))))
 
 (noir/defpage "/favicon.ico" [] "")
 

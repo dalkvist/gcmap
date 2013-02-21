@@ -209,15 +209,6 @@ function onFeatureUnselect(feature) {
 }
 var geojson = new OpenLayers.Format.GeoJSON();
 
-$("#save").live("click", function(){
-    $("#saveform").toggle();
-});
-
-
-$("#tools .attack").live("click", function(){
-    $("#attack").toggle();
-});
-
 $("#saveform a").live("click", function(){
     var n = $("#name").val();
     var p = $("#password").val();
@@ -225,8 +216,6 @@ $("#saveform a").live("click", function(){
     $.post("http://" + window.location.host + "/save",
            {"name" : n, "password" : p, "newmap" : f},
            function(){});
-
-    $(this).closest(".popup").toggle();
     return false;
 });
 
@@ -246,19 +235,23 @@ var highlightTerritory = function(text){
     territories.redraw();
 };
 
+$("#sidebar > div a:first-child").live("click", function(){
+    $('#sidebar .selected').toggleClass('selected');
+    $(this).parent().toggleClass('selected');
+});
+
 $("#search form").live("submit", function(){ highlightTerritory($("#mapSearch").val()); return false;});
 
 $("#attack form").live("submit", function(){ var from = $("#attack #from").val();
                                              var to = $("#attack #to").val();
                                              var d = $("#attack #divitions").val();
                                              attack(from,to,d);
-                                             $(this).closest(".popup").toggle();
                                              return false;
                                            });
 
 $(document).ready(  function (){
   $("#map").height($(document).height()*0.9);
-  $("#map").width($(document).width()*0.95);
+  $("#map").width(($(document).width()*0.95) - 200);
     map = new OpenLayers.Map('map');
 
     var basemap = new OpenLayers.Layer.Image(

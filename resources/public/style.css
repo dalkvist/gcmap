@@ -21,15 +21,40 @@
 #map {
   width: 800px;
   height: 600px;
+  float:right;
   }
 
+#sidebar
+{
+width: 250px;
+background-color: #cccccc;
+float:left;
+}
+
+#sidebar form{
+    display:none;
+}
+
+#sidebar .selected form
+{
+    display:block;
+}
+
+#sidebar > div a:first-child{
+    width: auto;
+    height: 15px;
+    padding: 5px;
+    display: block;
+    text-transform: uppercase;
+    background-color: #999;
+    border-bottom: 3px solid #cccccc;
+}
 form{
   width:350px;
 }
 form > * {
   display: block;
   margin-right: 25px;
-  clear:both;
 }
 form span label {
   width: 160px;
@@ -45,11 +70,9 @@ form span input[type="text"] {
   height:22px;
 }
 #wcp{
-  position: absolute;
-  bottom: 100px;
-  left: 50px;
-  z-index: 999999;
+  display:block;
   background-color: white;
+  margin:5px;
 }
 #wcp span {
   padding:5px;
@@ -62,30 +85,9 @@ form span input[type="text"] {
 #wcp span.a2 {
   color:#0000AA;
 }
-#tools {
-  display: block;
-  position: absolute;
-  bottom: 5px;
-  right: 10px;
-  z-index: 9999999;
-}
-#tools a{
-    display:block;
-}
 
 #export{
   word-break: break-all;
-}
-
-.popup{
-    display:none;
-    position: fixed;
-    left:0;
-    right:0;
-    top:0;
-    bottom:0;
-    z-index: 99999;
-    margin: 15% 50%;
 }
 
 .popup form{
