@@ -61,9 +61,9 @@
             [:a.edit {:href "#"} "edit"]
             [:div.sub
              (fh/form-to [:get ""]
-               [:h5 "edit"]
-               (fh/label "lform" "nothing") (fh/radio-button "edit" true "no")
-               (fh/label "lform" "territory")(fh/radio-button "edit" false "territory")
+               [:span.select
+                (fh/radio-button "edit" true "no") (fh/label "lform" "Pan")
+                (fh/radio-button "edit" false "territory")(fh/label "lform" "Select territory")]
                [:div.info]
                (fh/submit-button "update"))
              [:div.clear]]]

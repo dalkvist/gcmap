@@ -91,6 +91,18 @@ float:left;
     display: block;
 }
 
+#edit .select label {
+    width:100px;
+    clear:none;
+    margin:0px;
+    float:none;
+    display:inline;
+}
+#edit .select label:first-child {
+    width:15px;
+    clear:left;
+}
+
 #edit input[type="submit"],
 #edit input[type="button"]{
     clear:left;
