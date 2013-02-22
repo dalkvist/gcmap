@@ -42,6 +42,15 @@ if (!Object.keys) {
     };
   })();
 };
+
+var values = function (object)
+    {
+        var result = [];
+        for (var key in object)
+            result.push(object[key]);
+        return result;
+    };
+
 if (!Array.prototype.reduce) {
   Array.prototype.reduce = function reduce(accumulator){
     if (this===null || this===undefined) throw new TypeError("Object is null or undefined");
@@ -532,7 +541,7 @@ $(document).ready(  function (){
         if(typeof(data['armies']) == "string"){
             data['armies'] = JSON.parse(data['armies']);
         }
-        map.armies = data.armies;
+        map.armies = values(data.armies);
         map.baseLayer.redraw();
         territories.redraw();
     };

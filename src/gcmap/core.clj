@@ -109,7 +109,7 @@
 
 (noir/defpage [:post "/save"] {:as m}
     (res/json
-          (if (and (m :name) (m :newmap) (m :password) (= (m :password) "super secret gc password"))
+     (if (and (m :name) (m :newmap) (m :password) (= (hash (m :password)) -2099765068))
             (do (save-map! (merge (j/decode (m :newmap)) (dissoc m :newmap :password) ))
                 (j/encode {:message "map saved" :name (:name m)}))
             (j/encode {:message "password error" :name (:name m)}))))
