@@ -140,15 +140,21 @@ var map, selectControl, selectedFeature,updateMap, loadMap, getMap, territories,
 var editAttributes = false;
 var editGeometry = false;
 
-var showConfig = function(collection, target, ignore){
+var showConfig = function(collection, target, ignore, json){
     if(ignore == null){
         ignore = [];
+    }
+    if(json == null){
+        json = [];
     }
         $(Object.keys(collection)).sort().each(
             function(){
                 var key = this.toString();
                 var val = collection[this];
                 if(ignore.indexOf(key) == -1){
+                    if(json.indexOf(key) != -1){
+                        val = JSON.stringify(val);
+                    }
                     target.append("<span>" +
                                   "<label> " +
                                   key +
@@ -339,6 +345,9 @@ $(document).ready(  function (){
         {numZoomLevels: 3}
     );
 
+    map.armies = [{name: "star", fillColor:'#550000', strokeColor:'#990000', selectedFillColor: '#EE0000', attackColor: "#DD0000"},
+                  {name: "gld", fillColor:'#000055', strokeColor:'#000099', selectedFillColor: '#0000EE', attackColor: "#0044EE"}];
+
    var style = new OpenLayers.Style({
             strokeOpacity: 1,
             strokeWidth: 3,
@@ -374,8 +383,14 @@ $(document).ready(  function (){
                   }
                   return res;
               },
-            getColor: function(feature){
-
+            getFillColor: function(feature){
+                return map.armies.filter(function(army){return army.name == feature.data.army;})[0].fillColor;
+            },
+            getStrokeColor: function(feature){
+                return map.armies.filter(function(army){return army.name == feature.data.army;})[0].strokeColor;
+            },
+            getSelectedFillColor: function(feature){
+                return map.armies.filter(function(army){return army.name == feature.data.army;})[0].selectedFillColor;
             }
         },
             rules: [
@@ -414,20 +429,20 @@ $(document).ready(  function (){
                        filter: new OpenLayers.Filter.Comparison({
                          type: OpenLayers.Filter.Comparison.EQUAL_TO,
                          property: "army",
-                         value: "star"
+                         value: map.armies[0].name
                        }),
                        symbolizer: {
-                         fillColor: "#550000", strokeColor: "#990000"
+                         fillColor: "${getFillColor}", strokeColor: "${getStrokeColor}"
                        }
                     }),
                     new OpenLayers.Rule({
                       filter: new OpenLayers.Filter.Comparison({
                         type: OpenLayers.Filter.Comparison.EQUAL_TO,
                         property: "army",
-                        value: "gld"
-                      }),
+                         value: map.armies[1].name
+                       }),
                        symbolizer: {
-                         fillColor: "#000055", strokeColor: "#000099"
+                         fillColor:  "${getFillColor}", strokeColor:  "${getStrokeColor}"
                        }
                     }),
                 new OpenLayers.Rule({
@@ -453,12 +468,12 @@ $(document).ready(  function (){
                                 new OpenLayers.Filter.Comparison({
                                     type: OpenLayers.Filter.Comparison.EQUAL_TO,
                                     property: "army",
-                                    value: "star"
+                                    value: map.armies[0].name
                                 })],
                             type: OpenLayers.Filter.Logical.AND
                         }),
                         symbolizer: {
-                            fillColor: "#EE0000",
+                            fillColor: "${getSelectedFillColor}",
                             graphicZIndex: 999
                         }
                     }),
@@ -485,12 +500,12 @@ $(document).ready(  function (){
                                 new OpenLayers.Filter.Comparison({
                                     type: OpenLayers.Filter.Comparison.EQUAL_TO,
                                     property: "army",
-                                    value: "gld"
+                                    value: map.armies[1].name
                                 })],
                             type: OpenLayers.Filter.Logical.AND
                         }),
                         symbolizer: {
-                            fillColor: "#0000EE",
+                            fillColor: "${getSelectedFillColor}",
                             graphicZIndex: 999
                         }
                     })
@@ -514,7 +529,12 @@ $(document).ready(  function (){
         $("h3").text(data.name);
         map.baseLayer.url =  data['bgurl'];
         map.baseLayer.extent = new OpenLayers.Bounds.fromString(data['bgbounds']);
+        if(typeof(data['armies']) == "string"){
+            data['armies'] = JSON.parse(data['armies']);
+        }
+        map.armies = data.armies;
         map.baseLayer.redraw();
+        territories.redraw();
     };
 
 
@@ -529,9 +549,12 @@ $(document).ready(  function (){
         if(data['bgbounds'] == null){
             data['bgbounds'] = map.baseLayer.extent.toBBOX();
         }
+        if(data['armies'] == null){
+            data['armies'] = map.armies;
+        }
         updateMap(data);
         $("#edit .map").children().remove();
-        showConfig(data, $("#edit .map"), ["features", "type", "password"]);
+        showConfig(data, $("#edit .map"), ["features", "type", "password"], ["armies"]);
         territories.removeAllFeatures();
         territories.addFeatures(geojson.read(data));
         updateWCP();
@@ -550,7 +573,11 @@ $(document).ready(  function (){
             labelOutlineColor: "black",
             labelOutlineWidth: 1,
             graphicZIndex: 99999
-        }, {
+        }, { context: {
+            getAttackColor: function(feature){
+                return map.armies.filter(function(army){return army.name == feature.data.army;})[0].attackColor;
+            }
+        },
         rules: [
             new OpenLayers.Rule({
                 filter: new OpenLayers.Filter.Comparison({
@@ -579,18 +606,18 @@ $(document).ready(  function (){
                 filter: new OpenLayers.Filter.Comparison({
                     type: OpenLayers.Filter.Comparison.EQUAL_TO,
                     property: "army",
-                    value: "star"
+                    value: map.armies[0].name
                 }),
-                symbolizer: {strokeColor: "#DD0000"
+                symbolizer: {strokeColor: map.armies[0].attackColor
                             }
             }),
             new OpenLayers.Rule({
                 filter: new OpenLayers.Filter.Comparison({
                     type: OpenLayers.Filter.Comparison.EQUAL_TO,
                     property: "army",
-                    value: "gld"
+                    value:  map.armies[1].name
                 }),
-                symbolizer: { strokeColor: "#0044EE"
+                symbolizer: { strokeColor: map.armies[1].attackColor
                             }
             })
         ]})),
