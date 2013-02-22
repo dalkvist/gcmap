@@ -1,3 +1,14 @@
+if(!Array.prototype.indexOf) {
+    Array.prototype.indexOf = function(needle) {
+        for(var i = 0; i < this.length; i++) {
+            if(this[i] === needle) {
+                return i;
+            }
+        }
+        return -1;
+    };
+}
+
 if (!Object.keys) {
   Object.keys = (function () {
     var hasOwnProperty = Object.prototype.hasOwnProperty,
@@ -125,9 +136,33 @@ var updateWCP  = function(){
 
 }
 
-var map, selectControl, selectedFeature, loadMap, getMap, territories, featuresm, mf;
+var map, selectControl, selectedFeature,updateMap, loadMap, getMap, territories, featuresm, mf;
 var editAttributes = false;
 var editGeometry = false;
+
+var showConfig = function(collection, target, ignore){
+    if(ignore == null){
+        ignore = [];
+    }
+        $(Object.keys(collection)).sort().each(
+            function(){
+                var key = this.toString();
+                var val = collection[this];
+                if(ignore.indexOf(key) == -1){
+                    target.append("<span>" +
+                                  "<label> " +
+                                  key +
+                                  "</label>"  +
+                                  "<input name='" +
+                                  key +
+                                  "' type='text' value='" +
+                                  val +
+                                  "' />" +
+                                  "</span>");
+                };
+            });
+};
+
 function onPopupClose(evt) {
     selectControl.unselect(selectedFeature);
 }
@@ -137,21 +172,8 @@ function onFeatureSelect(feature) {
     territories.redraw();
     if(editAttributes == true){
         var info = $("#edit form .info");
-        $(Object.keys(selectedFeature.attributes)).sort().each(
-            function(){
-                var key = this;
-                var val = selectedFeature.attributes[this];
-                info.append("<span>" +
-                                             "<label> " +
-                                             key +
-                                             "</label>"  +
-                                             "<input name='" +
-                                             key +
-                                             "' type='text' value='" +
-                                             val +
-                                             "' />" +
-                                             "</span>");
-            });
+        var collection = selectedFeature.attributes;
+        showConfig(collection, info);
         info.append("<div class='pre'>Edit shape</div>");
         info.append('<input checked="true" name="geometry" type="radio" value="no">');
         info.append("<label>False</label>");
@@ -229,10 +251,22 @@ $("#sidebar #edit input[type='radio']").live("click", function(){
         editAttributes = false;
         editGeometry = false;
     }
+    if(selected == "mapsettings"){
+        $("#edit .map,#edit #update").toggle(true);
+    }else{
+        $("#edit .map,#edit #update").toggle(false);
+    }
+
 });
 
 $("#edit form").live("submit", function(){
-    updateTerritory();
+    var selected = $("#sidebar #edit :checked").attr('value');
+    if(selected == "territory"){
+        updateTerritory();
+    }
+    if(selected == "mapsettings"){
+            updateMap(getMapInfo());
+    }
     return false;
 });
 
@@ -256,13 +290,33 @@ $("#edit form input[name='geometry']").live("click", function(){
     }
 });
 
+var getMapInfo = function(){
+    var m = {};
+    $("#edit .map input").each(function(){m[this.name] = this.value;});
+    return m;
+};
+
 $("#saveform form").live("submit", function(){
-    var n = $("#name").val();
-    var p = $("#password").val();
-    var f = geojson.write(territories.features);
+    var m = getMapInfo();
+    updateMap(m);
+    m.password = $("#password").val();
+    m.newmap = geojson.write(territories.features);
     $.post("http://" + window.location.host + "/save",
-           {"name" : n, "password" : p, "newmap" : f},
-           function(){});
+           m,
+           function(d,s){
+               var data = $.parseJSON(d);
+               if(data.message == "map saved"){
+                   $("#maps").prepend("<a href='#'>" + data.name + "</a>");
+               }
+               else{
+
+               }
+           });
+    return false;
+});
+
+$("#edit #update").live("click", function(){
+    updateMap(getMapInfo());
     return false;
 });
 
@@ -455,13 +509,29 @@ $(document).ready(  function (){
         rendererOptions: {yOrdering: false}
     });
 
+    updateMap = function(data){
+
+        $("h3").text(data.name);
+        map.baseLayer.url =  data['bgurl'];
+        map.baseLayer.extent = new OpenLayers.Bounds.fromString(data['bgbounds']);
+        map.baseLayer.redraw();
+    };
+
 
     getMap = function(name){
         $.get("http://" + window.location.host + "/map/" +  name, function(data){ loadMap(data);});
     };
 
     loadMap = function(data){
-        $("h3").text(data.name);
+        if(data['bgurl'] == null){
+            data['bgurl'] = map.baseLayer.url;
+        }
+        if(data['bgbounds'] == null){
+            data['bgbounds'] = map.baseLayer.extent.toBBOX();
+        }
+        updateMap(data);
+        $("#edit .map").children().remove();
+        showConfig(data, $("#edit .map"), ["features", "type", "password"]);
         territories.removeAllFeatures();
         territories.addFeatures(geojson.read(data));
         updateWCP();

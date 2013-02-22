@@ -57,26 +57,29 @@
                (fh/label "lfrom" "to:") (fh/text-field "to")
                (fh/label "ldivitions" "nr divitions:")(fh/text-field "divitions")
                (fh/submit-button "ATTACK!"))]]
-           [:div#edit
+           [:div#edit.edit
             [:a.edit {:href "#"} "edit"]
             [:div.sub
              (fh/form-to [:get ""]
                [:span.select
                 (fh/radio-button "edit" true "no") (fh/label "lform" "Pan")
-                (fh/radio-button "edit" false "territory")(fh/label "lform" "Select territory")]
+                (fh/radio-button "edit" false "territory")(fh/label "lform" "Select territory")
+                (fh/radio-button "edit" false "mapsettings")(fh/label "lform" "Map")]
                [:div.info]
+               [:div.map]
+               [:input#update {:type "button" :value "apply changes"}]
                (fh/submit-button "update"))
              [:div.clear]]]
-           [:div#saveform
+           [:div#saveform.edit
             [:a#save {:href "#"} "save"]
             [:div.sub
              (fh/form-to [:post "save"]
                (fh/hidden-field "terr")
-               (fh/label "lName" "name:")
-               (fh/text-field "name")
+               [:div.info]
                (fh/label "lPass" "password:")
                (fh/text-field "password")
-               (fh/submit-button "save"))]]
+               (fh/submit-button "save"))
+             [:div.clear]]]
            [:div#todo
             [:a#todo {:href "#"} "TODO"]
             [:div.sub
@@ -105,10 +108,11 @@
               (last (get-maps)))))
 
 (noir/defpage [:post "/save"] {:as m}
-    (layout (str (m :name) " " (m :newmap) " " (m :password))
-          (when (and (m :name) (m :newmap) (m :password) (= (m :password) "super secret gc password"))
-            (str (m :name) " " (m :newmap) " " (m :password))
-            (save-map! (assoc (j/decode (m :newmap)) :name (m :name)  )))))
+    (res/json
+          (if (and (m :name) (m :newmap) (m :password) (= (m :password) "super secret gc password"))
+            (do (save-map! (merge (j/decode (m :newmap)) (dissoc m :newmap :password) ))
+                (j/encode {:message "map saved" :name (:name m)}))
+            (j/encode {:message "password error" :name (:name m)}))))
 
 (noir/defpage [:get "/export"] []
   (res/json (get-maps)))

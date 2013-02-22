@@ -75,41 +75,46 @@ form span input[type="text"] {
     float:left;
 }
 
-#edit form > *{
+.edit form > *{
 display:block;
 float:left;
 }
 
-#edit form label{
+.edit form label{
     clear:left;
     width:75px;
 }
 
-#edit form span  {
+.edit form span  {
     width: 100%;
     height: 30px;
     display: block;
 }
 
-#edit .select label {
+.edit .select label {
     width:100px;
     clear:none;
     margin:0px;
     float:none;
     display:inline;
 }
-#edit .select label:first-child {
+.edit .select label:first-child {
     width:15px;
     clear:left;
 }
 
-#edit input[type="submit"],
-#edit input[type="button"]{
+.edit input[type="submit"],
+.edit input[type="button"]{
     clear:left;
 }
 
-#edit label.pre{
+.edit label.pre{
     margin-right: 8px;
+}
+
+#edit .map,
+#edit #update{
+    display:none;
 }
 
 #wcp{
