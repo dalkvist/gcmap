@@ -21,10 +21,12 @@
     [:title "Global Conflict campaign map" ]
     (ph/include-css "/style.css")
     (ph/include-css "theme/default/style.css")
+    (ph/include-css "farbtastic/farbtastic.css")
     [:script {:src "http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.2.min.js"}]
     (ph/include-js "OpenLayers.debug.js")
     (ph/include-js "Direction.js")
     (ph/include-js "script2.js")
+    (ph/include-js "farbtastic/farbtastic.js")
 
      ]
     [:body

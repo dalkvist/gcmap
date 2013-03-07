@@ -183,7 +183,9 @@ var getConfig = function(collection, ignore, json, prename){
                         prename + key +
                         "' type='text' value='" +
                         val +
-                        "' />" +
+                        "'" +
+                        (key.toLowerCase().indexOf("color") != -1? "class=\"hex\"" :"") +
+                        " />" +
                         "</span>";
                 }
             };
@@ -377,11 +379,37 @@ var updateMapSize = function(){
   $("#map").width(($(window).width()*0.95) - 250);
 };
 
+$("input.hex").live("blur", function(event) {
+    $("div.picker-on").removeClass("picker-on");
+    $("#picker").remove();
+    $("input.focus, select.focus").removeClass("focus");
+});
+
+
+var showColorPickerBg = function(){
+    $("input.hex").each(function() {
+        $("<div/>").farbtastic(this).remove();
+    });
+};
+
+$("input.hex")
+    .live("click", function(event) {
+        $(this).addClass("focus");
+        $("#picker").remove();
+        $("div.picker-on").removeClass("picker-on");
+        $("div.texturePicker ul:visible").hide(0).parent().css("position", "static");
+        $(this).after("<div id=\"picker\"></div>").parent().addClass("picker-on");
+        $("#picker").farbtastic(this);
+        event.preventDefault();
+    });
+
+
 $(document).ready(  function (){
+
     $("#edit form input[type='submit']").toggleClass('hidden');
     updateMapSize();
     $(window).resize(updateMapSize);
- map = new OpenLayers.Map('map');
+    map = new OpenLayers.Map('map');
 
     var basemap = new OpenLayers.Layer.Image(
         'map',
@@ -601,6 +629,7 @@ $(document).ready(  function (){
         updateMap(data);
         $("#edit .map").children().remove();
         $("#edit .map").append(getConfig(data, ["features", "type", "password"], ["armies"]));
+        showColorPickerBg();
         territories.removeAllFeatures();
         territories.addFeatures(geojson.read(data));
         updateWCP();

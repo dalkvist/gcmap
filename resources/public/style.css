@@ -76,6 +76,11 @@ form span input[type="text"]:focus{
     right: 0;
 }
 
+
+form span input[type="text"].hex{
+    width: 75px;
+}
+
 #search input[type='reset'],
 #search input[type='submit']{
     float:left;
@@ -130,6 +135,11 @@ float:left;
     clear:left;
 }
 
+.edit .m > label{
+    font-weight:bold;
+    cursor:pointer;
+}
+
 .edit input[type="submit"],
 .edit input[type="button"]{
     clear:left;
@@ -144,6 +154,15 @@ float:left;
     display:none;
 }
 
+#picker {
+    position: relative;
+    z-index: 10;
+    background-color: #DDDDDD;
+    bottom: -28px;
+}
+.farbtastic, .farbtastic .wheel {
+    margin: auto;
+}
 #wcp{
   display:block;
   background-color: white;
