@@ -149,33 +149,48 @@ var map, selectControl, selectedFeature,updateMap, loadMap, getMap, territories,
 var editAttributes = false;
 var editGeometry = false;
 
-var showConfig = function(collection, target, ignore, json){
+var getConfig = function(collection, ignore, json, prename){
     if(ignore == null){
         ignore = [];
     }
     if(json == null){
         json = [];
     }
-        $(Object.keys(collection)).sort().each(
-            function(){
-                var key = this.toString();
-                var val = collection[this];
-                if(ignore.indexOf(key) == -1){
+    if(prename == null){
+        prename = "";
+    }
+    return $(Object.keys(collection)).sort().map(
+        function(){
+            var res = "";
+            var key = this.toString();
+            var val = collection[this];
+            if(ignore.indexOf(key) == -1){
+                if(typeof(val) == 'object'){
+                    res += "<span class='m " + key + "'>" +
+                        (prename != ""? "<label> " + prename + key + "</label>": "") +
+                        getConfig(val, ignore, json, prename + key + "." ) +
+                        "</span>";
+                }
+                else{
                     if(json.indexOf(key) != -1){
                         val = JSON.stringify(val);
                     }
-                    target.append("<span>" +
-                                  "<label> " +
-                                  key +
-                                  "</label>"  +
-                                  "<input name='" +
-                                  key +
-                                  "' type='text' value='" +
-                                  val +
-                                  "' />" +
-                                  "</span>");
-                };
-            });
+                    res +="<span>" +
+                        "<label> " +
+                        key +
+                        "</label>"  +
+                        "<input name='" +
+                        prename + key +
+                        "' type='text' value='" +
+                        val +
+                        "' />" +
+                        "</span>";
+                }
+            };
+            return res;
+        }).toArray().reduce(function(a,b){
+            return a + b;
+        });
 };
 
 function onPopupClose(evt) {
@@ -188,7 +203,7 @@ function onFeatureSelect(feature) {
     if(editAttributes == true){
         var info = $("#edit form .info");
         var collection = selectedFeature.attributes;
-        showConfig(collection, info);
+        info.append(getConfig(collection));
         info.append("<div class='pre'>Edit shape</div>");
         info.append('<input checked="true" name="geometry" type="radio" value="no">');
         info.append("<label>False</label>");
@@ -241,6 +256,11 @@ var highlightTerritory = function(text){
 $("#sidebar > div a:first-child").live("click", function(){
     $('#sidebar .selected').toggleClass('selected');
     $(this).parent().toggleClass('selected');
+});
+
+
+$("#sidebar .m label:first-child").live("click", function(){
+    $(this).parent().toggleClass('show');
 });
 
 $("#search form").live("submit", function(){ highlightTerritory($("#mapSearch").val()); return false;});
@@ -305,9 +325,26 @@ $("#edit form input[name='geometry']").live("click", function(){
     }
 });
 
+var assocIn = function (m, ks, v){
+    if(!m){
+        m = {};
+    }
+    if(ks.length > 1){
+        m[ks[0]] =  assocIn(m[ks[0]], ks.splice(1), v);
+    }
+    else{
+        if(ks.length == 1){
+            m[ks[0]] = v;
+        }
+    }
+    return m;
+};
+
 var getMapInfo = function(){
     var m = {};
-    $("#edit .map input").each(function(){m[this.name] = this.value;});
+    $("#edit .map input").each(function(){
+        assocIn(m, this.name.split("."), this.value);
+    });
     return m;
 };
 
@@ -563,7 +600,7 @@ $(document).ready(  function (){
         }
         updateMap(data);
         $("#edit .map").children().remove();
-        showConfig(data, $("#edit .map"), ["features", "type", "password"], ["armies"]);
+        $("#edit .map").append(getConfig(data, ["features", "type", "password"], ["armies"]));
         territories.removeAllFeatures();
         territories.addFeatures(geojson.read(data));
         updateWCP();

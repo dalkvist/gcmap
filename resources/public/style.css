@@ -70,6 +70,12 @@ form span input[type="text"] {
   height:22px;
 }
 
+form span input[type="text"]:focus{
+    width: auto;
+    position: absolute;
+    right: 0;
+}
+
 #search input[type='reset'],
 #search input[type='submit']{
     float:left;
@@ -89,8 +95,29 @@ float:left;
     width: 100%;
     height: 30px;
     display: block;
+    clear: both;
+    position: relative;
 }
 
+.edit form .m {
+    height: auto;
+}
+
+.edit form .map > .m {
+    margin-left: 10px;
+}
+
+.edit form .m .m {
+    margin-bottom: 5px;
+}
+
+.edit form .m .m span {
+    display: none;
+}
+
+.edit form .m .m.show span {
+    display: block;
+}
 .edit .select label {
     width:100px;
     clear:none;
