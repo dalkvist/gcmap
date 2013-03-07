@@ -203,10 +203,10 @@ var editGeometry = false;
 
 var getConfig = function(collection, ignore, hidden, prename){
     if(ignore == null){
-        ignore = [];
+        ignore = ["features"];
     }
     if(hidden == null){
-        hidden = ["id"];
+        hidden = ["id", "edit"];
     }
     if(prename == null){
         prename = "";
@@ -216,33 +216,37 @@ var getConfig = function(collection, ignore, hidden, prename){
             var res = "";
             var key = this.toString();
             var val = collection[this];
-            if(typeof(val) == 'object' && (!val['id'] || val['position'])){
-                res += "<span class='m " + key + "'>" +
-                    (prename != "" || val['position']? "<label> " + prename + key + "</label>": "") +
-                    getConfig(val, ignore, hidden, prename + key + "." ) +
-                    "</span>";
-            }
-            else{
-                if(hidden.indexOf(key) != -1){
-                    res += "<input name='" +
-                        prename + key +
-                        "' type='hidden' value='" +
-                        val +
-                        "' />";
-                }else{
-                res += "<span>" +
-                    "<label> " +
-                    key +
-                    "</label>"  +
-                    "<input name='" +
-                    prename + key +
-                    "' type='text' value='" +
-                    val +
-                    "'" +
-                    (key.toLowerCase().indexOf("color") != -1? " class=\"hex\" " :" ") +
-                    " />" +
-                    (key == "position" && val.id? "<input type='hidden' name='" + prename + "id' value='"+ val.id  +"' />" : "") +
-                    "</span>";
+            if(ignore.indexOf(key) == -1){
+                if(typeof(val) == 'object' && (!val['id'] || val['position'])){
+                    res += "<span class='m " + key + "'>" +
+                        (prename != "" || val['position']? "<label> " + prename + key + "</label>": "") +
+                        getConfig(val, ignore, hidden, prename + key + "." ) +
+                        "</span>";
+                }
+                else{
+                    if(hidden.indexOf(key) != -1){
+                        res += "<input name='" +
+                            prename + key +
+                            "' type='hidden' value='" +
+                            val +
+                            "' class='positionId' />";
+                    }else{
+                        res += "<span>" +
+                            "<label> " +
+                            key +
+                            "</label>"  +
+                            "<input name='" +
+                            prename + key +
+                            "' type='text' value='" +
+                            val +
+                            "'" +
+                            (key.toLowerCase().indexOf("color") != -1? " class=\"hex\" " :" ") +
+                            " />" +
+                            (key == "position"? "<input name='edit' type='checkbox' class='possitionEdit' />"
+                             + ( val.id ?
+                                 "<input type='hidden' name='" + prename + "id' value='"+ val.id  +"' class='positionId' />" : "") : "") +
+                            "</span>";
+                    }
                 }
             }
             return res;
@@ -275,43 +279,65 @@ function onPopupClose(evt) {
     selectControl.unselect(selectedFeature);
 }
 function onFeatureSelect(feature) {
-    selectedFeature = feature;
-    feature.attributes.selected = true;
-    territories.redraw();
-    if(editAttributes == true){
-        var info = $("#edit form .info");
 
-        ensurePoints(selectedFeature);
+    if(feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon"){
 
-        var collection = selectedFeature.attributes;
-        info.append(getConfig(collection));
-        info.append("<div class='pre'>Edit shape</div>");
-        info.append('<input checked="true" name="geometry" type="radio" value="no">');
-        info.append("<label>False</label>");
-        info.append('<input  name="geometry" type="radio" value="shape">');
-        info.append("<label>Shape</label>");
-        info.append('<input  name="geometry" type="radio" value="position">');
-        info.append("<label>Position</label>");
+        selectedFeature = feature;
+        feature.attributes.selected = true;
+        territories.redraw();
+        if(editAttributes == true){
+            var info = $("#edit form .info");
 
-        $("#edit form input[type='submit']").toggleClass('hidden');
-    }
-    if(editGeometry == true){
-        if(mf.feature){
-            mf.unselectFeature();
+            ensurePoints(selectedFeature);
+
+            var collection = selectedFeature.attributes;
+            info.append(getConfig(collection));
+            info.append("<div class='pre'>Edit shape</div>");
+            info.append('<input checked="true" name="geometry" type="radio" value="no">');
+            info.append("<label>False</label>");
+            info.append('<input  name="geometry" type="radio" value="shape">');
+            info.append("<label>Shape</label>");
+            info.append('<input  name="geometry" type="radio" value="position">');
+            info.append("<label>Position</label>");
+
+            $("#edit form input[type='submit']").toggleClass('hidden', false);
+
         }
-        mf.selectFeature(selectedFeature);
+        if(editGeometry == true){
+            if(mf.feature){
+                mf.unselectFeature();
+            }
+            mf.selectFeature(selectedFeature);
+        }
     }
 }
+
 function onFeatureUnselect(feature) {
-    feature.attributes.selected = false;
-    territories.redraw();
-    if(editAttributes == true){
-        $("#edit form .info").children().remove();
-        $("#edit form input[type='submit']").toggleClass('hidden');
+    if(mf.feature && mf.feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Point"){
+        var f = mf.feature;
+        var p = f.attributes.parent;
+        p.attributes[mf.feature.attributes.type].position = f.geometry;
+        mf.unselectFeature();
+
+        $(".possitionEdit:checked").attr("checked", false);
+
+        onFeatureUnselect(p);
+        editAttributes = true;
+        p.attributes.selected = true;
+        selectControl.select(p);
     }
-    if(editGeometry == true){
-        if(mf.feature){
-            mf.unselectFeature();
+    else{
+        feature.attributes.selected = false;
+        territories.redraw();
+        if(editAttributes == true){
+            $("#edit form .info").children().remove();
+            $("#edit form input[type='submit']").toggleClass('hidden', true);
+        }
+        if(editGeometry == true){
+            if(mf.feature){
+                mf.unselectFeature();
+            }
+
         }
     }
 }
@@ -379,6 +405,15 @@ $("#edit form").live("submit", function(){
     var selected = $("#sidebar #edit :checked").attr('value');
     if(selected == "territory"){
         updateTerritory();
+        var f = selectedFeature;
+        if(f){
+            try{
+                onFeatureUnselect(selectedFeature);
+                onFeatureSelect(selectedFeature);
+                }
+            catch(e){
+            }
+        }
     }
     if(selected == "mapsettings"){
             updateMap(getMapInfo());
@@ -386,6 +421,25 @@ $("#edit form").live("submit", function(){
     return false;
 });
 
+$("#edit form input.possitionEdit").live("click", function(){
+    var id = $(this).closest(".m").find(".positionId").attr("value");
+    var f = $(territories.features).filter(function(){return this.geometry.id == id;})[0];
+
+    if($(this).closest(".m").find("input[name$='available']").attr("value") != "false"){
+        if(mf.feature){
+            if(mf.feature.geometry.id == id){
+                onFeatureUnselect(f);
+                return true;
+            }
+            return false;
+        }else{
+        mf.selectFeature(f);
+            return true;
+        }
+    }else{
+        return false;
+    }
+});
 
 $("#edit form input[name='geometry']").live("click", function(){
     var edit = $(this).attr('value');
@@ -462,7 +516,7 @@ $("input.hex")
 
 $(document).ready(  function (){
 
-    $("#edit form input[type='submit']").toggleClass('hidden');
+    $("#edit form input[type='submit']").toggleClass('hidden', true);
     updateMapSize();
     $(window).resize(updateMapSize);
     map = new OpenLayers.Map('map');

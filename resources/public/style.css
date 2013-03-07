@@ -98,7 +98,7 @@ float:left;
 
 .edit form span  {
     width: 100%;
-    height: 30px;
+    height: auto;
     display: block;
     clear: both;
     position: relative;
@@ -139,6 +139,7 @@ float:left;
     font-weight:bold;
     cursor:pointer;
 }
+
 
 .edit input[type="submit"],
 .edit input[type="button"]{
