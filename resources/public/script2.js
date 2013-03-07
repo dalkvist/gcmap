@@ -84,6 +84,21 @@ var frequencies = function(a) {
  }
  return b;
 }
+var assocIn = function (m, ks, v){
+    if(!m){
+        m = {};
+    }
+    if(ks.length > 1){
+        m[ks[0]] =  assocIn(m[ks[0]], ks.splice(1), v);
+    }
+    else{
+        if(ks.length == 1){
+            m[ks[0]] = v;
+        }
+    }
+    return m;
+};
+
 var trueish = function(s){
   return s != null && ( s == true || (typeof(s) == "string" && ( s.toLowerCase()  == "true" || s.toLowerCase() == "yes" || s == "1")));
 }
@@ -91,21 +106,52 @@ var trueish = function(s){
 var theaters = {'australia': 2, 'south america' : 2, 'middle east' : 3, 'africa' : 4, 'north america' : 5, 'europe' : 6, 'asia' : 6};
 var filterTerritory = function(key, value){return  $(map.layers[1].features).filter(function(){return this.attributes[key] == value;});};
 
+var getInfo = function(parent){
+    var m = {};
+    $(parent).each(function(){
+        assocIn(m, this.name.split("."), this.value);
+    });
+    return m;
+};
+
+
+var getMapInfo = function(){
+    return getInfo("#edit .map input");
+};
+
+var updatePoints = function(feature){
+    for (var key in feature.attributes){
+        if (feature.attributes.hasOwnProperty(key)) {
+        var value = feature.attributes[key];
+        if(value.position){
+            var point = territories.getFeatureById(value.position.id);
+            var newPoint = value.position;
+            if(typeof(newPoint) == "string"){
+                newPoint = new OpenLayers.Geometry.fromWKT(newPoint);
+            }
+            if(newPoint.id.indexOf("Point") != -1){
+                newPoint = new OpenLayers.Feature.Vector(newPoint);
+            }
+            if(!point){
+                point = newPoint;
+                point.attributes = assocIn(point.attributes, ["type"], key);
+                point.attributes = assocIn(point.attributes, ["army"], feature.attributes.army);
+                point.attributes = assocIn(point.attributes, ["available"], feature.attributes[key].available);
+                point.attributes = assocIn(point.attributes, ["parent"], feature);
+                territories.addFeatures([point]);
+            }else{
+                point.geometry = newPoint.geometry;
+            }
+        }
+        }
+    };
+};
+
+
 var updateTerritory = function(){
-    selectedFeature.attributes.name = $("#edit input[name='name']").val();
-    selectedFeature.attributes.theater = $("#edit input[name='theater']").val();
-    selectedFeature.attributes.map = $("#edit input[name='map']").val();
-    selectedFeature.attributes.army = $("#edit input[name='army']").val();
-    selectedFeature.attributes.divitions = $("#edit input[name='divitions']").val();
-    selectedFeature.attributes.hq = $("#edit input[name='hq']").val();
-    selectedFeature.attributes.ab = $("#edit input[name='ab']").val();
-    selectedFeature.attributes.aa = $("#edit input[name='aa']").val();
-    selectedFeature.attributes.fob = $("#edit input[name='fob']").val();
-    selectedFeature.attributes.xOffset = $("#edit input[name='xOffset']").val();
-    selectedFeature.attributes.yOffset = $("#edit input[name='yOffset']").val();
-    if(selectedFeature.attributes.xOffset ==  null || selectedFeature.attributes.xOffset == ""){ selectedFeature.attributes.xOffset = "0";}
-    if(selectedFeature.attributes.yOffset ==  null || selectedFeature.attributes.yOffset == ""){ selectedFeature.attributes.yOffset = "0";}
+    selectedFeature.attributes = getInfo("#edit .info span input");
     updateWCP();
+    updatePoints(selectedFeature);
     territories.redraw();
 };
 
@@ -165,10 +211,10 @@ var getConfig = function(collection, ignore, json, prename){
             var key = this.toString();
             var val = collection[this];
             if(ignore.indexOf(key) == -1){
-                if(typeof(val) == 'object'){
+                if(typeof(val) == 'object' && !val['id']){
                     res += "<span class='m " + key + "'>" +
-                        (prename != ""? "<label> " + prename + key + "</label>": "") +
-                        getConfig(val, ignore, json, prename + key + "." ) +
+                        (prename != "" || val['position']? "<label> " + prename + key + "</label>": "") +
+                        getConfig(val, ignore.concat(val['id']), json, prename + key + "." ) +
                         "</span>";
                 }
                 else{
@@ -195,6 +241,18 @@ var getConfig = function(collection, ignore, json, prename){
         });
 };
 
+var ensurePoints = function(feature, ks){
+    for(var key in feature.attributes){
+        if(ks.indexOf(key) != -1 && typeof(feature.attributes[key]) == "string"){
+            var val = trueish(feature.attributes[key]);
+            feature.attributes[key] = {};
+            feature.attributes[key].available = val;
+            feature.attributes[key].position = feature.geometry.getCentroid();
+        }
+    }
+    return feature;
+};
+
 function onPopupClose(evt) {
     selectControl.unselect(selectedFeature);
 }
@@ -204,6 +262,9 @@ function onFeatureSelect(feature) {
     territories.redraw();
     if(editAttributes == true){
         var info = $("#edit form .info");
+
+        ensurePoints(selectedFeature, ["hq", "aa", "ab", "fob"]);
+
         var collection = selectedFeature.attributes;
         info.append(getConfig(collection));
         info.append("<div class='pre'>Edit shape</div>");
@@ -327,29 +388,6 @@ $("#edit form input[name='geometry']").live("click", function(){
     }
 });
 
-var assocIn = function (m, ks, v){
-    if(!m){
-        m = {};
-    }
-    if(ks.length > 1){
-        m[ks[0]] =  assocIn(m[ks[0]], ks.splice(1), v);
-    }
-    else{
-        if(ks.length == 1){
-            m[ks[0]] = v;
-        }
-    }
-    return m;
-};
-
-var getMapInfo = function(){
-    var m = {};
-    $("#edit .map input").each(function(){
-        assocIn(m, this.name.split("."), this.value);
-    });
-    return m;
-};
-
 $("#saveform form").live("submit", function(){
     var m = getMapInfo();
     updateMap(m);
@@ -419,14 +457,16 @@ $(document).ready(  function (){
         {numZoomLevels: 3}
     );
 
-    map.armies = [{name: "star", fillColor:'#550000', strokeColor:'#990000', selectedFillColor: '#EE0000', attackColor: "#DD0000"},
-                  {name: "gld", fillColor:'#000055', strokeColor:'#000099', selectedFillColor: '#0000EE', attackColor: "#0044EE"}];
+    map.armies = [{name: "star", fillColor:'#550000', strokeColor:'#990000', selectedFillColor: '#EE0000', attackColor: "#DD0000",
+                   externalGraphic: {hq: "img/hq2.png", aa: "img/aa2.png", ab: "img/ab2.png", fob: "img/fob2.png"}},
+                  {name: "gld", fillColor:'#000055', strokeColor:'#000099', selectedFillColor: '#0000EE', attackColor: "#0044EE",
+                   externalGraphic: {hq: "img/hq.png", aa: "img/aa.png", ab: "img/ab.png", fob: "img/fob.png"}}];
 
    var style = new OpenLayers.Style({
             strokeOpacity: 1,
             strokeWidth: 3,
-            fillOpacity: 0.6,
-            pointRadius: 6,
+            fillOpacity: "${getFillOpacity}",
+            pointRadius: "${getPointRadius}",
             pointerEvents: "visiblePainted",
             // label with \n linebreaks
             label : "${getLabel}",
@@ -457,14 +497,27 @@ $(document).ready(  function (){
                   }
                   return res;
               },
+            getExternalGraphic: function(feature){
+                var res = (feature.attributes && feature.attributes.type &&
+                           trueish(feature.attributes.available)?
+                           map.armies.filter(function(army){return army.name == feature.attributes.army;})[0]
+                           .externalGraphic[feature.attributes.type] : "");
+                return res;
+            },
+            getPointRadius: function(feature){
+                return (feature.attributes && feature.attributes.type? (trueish(feature.attributes.available)? 50 : 0 ): 6);
+            },
+            getFillOpacity: function(feature){
+                return (feature.attributes && feature.attributes.type && feature.geometry && feature.geometry.id.indexOf("Point") != -1? 1: 0.6);
+            },
             getFillColor: function(feature){
-                return map.armies.filter(function(army){return army.name == feature.data.army;})[0].fillColor;
+                return map.armies.filter(function(army){return army.name == feature.attributes.army;})[0].fillColor;
             },
             getStrokeColor: function(feature){
-                return map.armies.filter(function(army){return army.name == feature.data.army;})[0].strokeColor;
+                return map.armies.filter(function(army){return army.name == feature.attributes.army;})[0].strokeColor;
             },
             getSelectedFillColor: function(feature){
-                return map.armies.filter(function(army){return army.name == feature.data.army;})[0].selectedFillColor;
+                return map.armies.filter(function(army){return army.name == feature.attributes.army;})[0].selectedFillColor;
             }
         },
             rules: [
@@ -506,7 +559,7 @@ $(document).ready(  function (){
                          value: map.armies[0].name
                        }),
                        symbolizer: {
-                         fillColor: "${getFillColor}", strokeColor: "${getStrokeColor}"
+                         fillColor: "${getFillColor}", strokeColor: "${getStrokeColor}", externalGraphic: "${getExternalGraphic}"
                        }
                     }),
                     new OpenLayers.Rule({
@@ -516,7 +569,7 @@ $(document).ready(  function (){
                          value: map.armies[1].name
                        }),
                        symbolizer: {
-                         fillColor:  "${getFillColor}", strokeColor:  "${getStrokeColor}"
+                         fillColor:  "${getFillColor}", strokeColor:  "${getStrokeColor}", externalGraphic: "${getExternalGraphic}"
                        }
                     }),
                 new OpenLayers.Rule({
@@ -625,6 +678,12 @@ $(document).ready(  function (){
         }
         if(data['armies'] == null){
             data['armies'] = map.armies;
+        }else{
+            for(var k in data['armies']){
+                if(!data['armies'][k].externalGraphic){
+                    data['armies'][k].externalGraphic = map.armies[k].externalGraphic;
+                }
+            }
         }
         updateMap(data);
         $("#edit .map").children().remove();
@@ -632,6 +691,7 @@ $(document).ready(  function (){
         showColorPickerBg();
         territories.removeAllFeatures();
         territories.addFeatures(geojson.read(data));
+        $(territories.features).each(function(){ensurePoints(this, ["hq", "aa", "ab", "fob"]); updatePoints(this);});
         updateWCP();
     };
 
@@ -650,7 +710,7 @@ $(document).ready(  function (){
             graphicZIndex: 99999
         }, { context: {
             getAttackColor: function(feature){
-                return map.armies.filter(function(army){return army.name == feature.data.army;})[0].attackColor;
+                return map.armies.filter(function(army){return army.name == feature.attributes.army;})[0].attackColor;
             }
         },
         rules: [
