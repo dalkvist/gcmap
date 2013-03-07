@@ -126,27 +126,25 @@ var getMapInfo = function(){
 var updatePoints = function(feature){
     for (var key in feature.attributes){
         if (feature.attributes.hasOwnProperty(key)) {
-        var value = feature.attributes[key];
-        if(value.position){
-            var point = territories.getFeatureById(value.position.id);
-            var newPoint = value.position;
-            if(typeof(newPoint) == "string"){
-                newPoint = new OpenLayers.Geometry.fromWKT(newPoint);
-            }
-            if(newPoint.id.indexOf("Point") != -1){
-                newPoint = new OpenLayers.Feature.Vector(newPoint);
-            }
-            if(!point){
-                point = newPoint;
+            var value = feature.attributes[key];
+            if(value.position){
+                $(territories.features).filter(function(){return this.geometry.id == value.id;}).each(function(){this.destroy();});
+
+                var point;
+
+                if(typeof(value.position) == "string"){
+                    var p = new OpenLayers.Geometry.fromWKT(value.position);
+                    p.id = value.id;
+                    point= new OpenLayers.Feature.Vector(p);
+                }else{
+                    point= new OpenLayers.Feature.Vector(value.position);
+                }
                 point.attributes = assocIn(point.attributes, ["type"], key);
                 point.attributes = assocIn(point.attributes, ["army"], feature.attributes.army);
                 point.attributes = assocIn(point.attributes, ["available"], feature.attributes[key].available);
                 point.attributes = assocIn(point.attributes, ["parent"], feature);
                 territories.addFeatures([point]);
-            }else{
-                point.geometry = newPoint.geometry;
             }
-        }
         }
     };
 };
@@ -218,26 +216,34 @@ var getConfig = function(collection, ignore, hidden, prename){
             var res = "";
             var key = this.toString();
             var val = collection[this];
-            if(typeof(val) == 'object' && !val['id']){
+            if(typeof(val) == 'object' && (!val['id'] || val['position'])){
                 res += "<span class='m " + key + "'>" +
                     (prename != "" || val['position']? "<label> " + prename + key + "</label>": "") +
                     getConfig(val, ignore, hidden, prename + key + "." ) +
                     "</span>";
             }
             else{
-                res +="<span>" +
+                if(hidden.indexOf(key) != -1){
+                    res += "<input name='" +
+                        prename + key +
+                        "' type='hidden' value='" +
+                        val +
+                        "' />";
+                }else{
+                res += "<span>" +
                     "<label> " +
                     key +
                     "</label>"  +
                     "<input name='" +
                     prename + key +
-                    "' value='" +
+                    "' type='text' value='" +
                     val +
                     "'" +
-                    (hidden.indexOf(key) != -1? " type=\"hidden\" " :" type='text' ") +
                     (key.toLowerCase().indexOf("color") != -1? " class=\"hex\" " :" ") +
                     " />" +
+                    (key == "position" && val.id? "<input type='hidden' name='" + prename + "id' value='"+ val.id  +"' />" : "") +
                     "</span>";
+                }
             }
             return res;
         }).toArray().reduce(function(a,b){
