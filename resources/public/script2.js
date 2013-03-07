@@ -1,3 +1,7 @@
+function isNumber(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
 if(!Array.prototype.indexOf) {
     Array.prototype.indexOf = function(needle) {
         for(var i = 0; i < this.length; i++) {
@@ -157,9 +161,13 @@ var updateTerritory = function(){
 
 var updateWCP  = function(){
     if(territories.features.length > 0){
-        var territoryCount = function(army){return filterTerritory("army",army).length;};
+        var territoryCount = function(army){return $(filterTerritory("army",army))
+                                            .filter(function(){return this.geometry &&
+                                                               this.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon";}).length;};
         var divitionCount = function(army){
-                                       var terrs = $.map(filterTerritory('army',army), function(t){return t.attributes.divitions - 0;});
+                                       var terrs = $.map(filterTerritory('army',army), function(t){var d = (t.attributes && t.attributes.divitions?
+                                                                                                            t.attributes.divitions.available : 0);
+                                                                                                  return (isNumber(d)? parseInt(d) : 0);});
                                        return terrs.reduce(function(a,b){return a + b;});
                                        };
         var tb = $.map(Object.keys(theaters),function(key){
@@ -195,12 +203,12 @@ var map, selectControl, selectedFeature,updateMap, loadMap, getMap, territories,
 var editAttributes = false;
 var editGeometry = false;
 
-var getConfig = function(collection, ignore, json, prename){
+var getConfig = function(collection, ignore, hidden, prename){
     if(ignore == null){
         ignore = [];
     }
-    if(json == null){
-        json = [];
+    if(hidden == null){
+        hidden = ["id"];
     }
     if(prename == null){
         prename = "";
@@ -210,41 +218,45 @@ var getConfig = function(collection, ignore, json, prename){
             var res = "";
             var key = this.toString();
             var val = collection[this];
-            if(ignore.indexOf(key) == -1){
-                if(typeof(val) == 'object' && !val['id']){
-                    res += "<span class='m " + key + "'>" +
-                        (prename != "" || val['position']? "<label> " + prename + key + "</label>": "") +
-                        getConfig(val, ignore.concat(val['id']), json, prename + key + "." ) +
-                        "</span>";
-                }
-                else{
-                    if(json.indexOf(key) != -1){
-                        val = JSON.stringify(val);
-                    }
-                    res +="<span>" +
-                        "<label> " +
-                        key +
-                        "</label>"  +
-                        "<input name='" +
-                        prename + key +
-                        "' type='text' value='" +
-                        val +
-                        "'" +
-                        (key.toLowerCase().indexOf("color") != -1? "class=\"hex\"" :"") +
-                        " />" +
-                        "</span>";
-                }
-            };
+            if(typeof(val) == 'object' && !val['id']){
+                res += "<span class='m " + key + "'>" +
+                    (prename != "" || val['position']? "<label> " + prename + key + "</label>": "") +
+                    getConfig(val, ignore, hidden, prename + key + "." ) +
+                    "</span>";
+            }
+            else{
+                res +="<span>" +
+                    "<label> " +
+                    key +
+                    "</label>"  +
+                    "<input name='" +
+                    prename + key +
+                    "' value='" +
+                    val +
+                    "'" +
+                    (hidden.indexOf(key) != -1? " type=\"hidden\" " :" type='text' ") +
+                    (key.toLowerCase().indexOf("color") != -1? " class=\"hex\" " :" ") +
+                    " />" +
+                    "</span>";
+            }
             return res;
         }).toArray().reduce(function(a,b){
             return a + b;
         });
 };
 
+var defaultpositionKeys = ["hq", "aa", "ab", "fob", "divitions"];
+
 var ensurePoints = function(feature, ks){
+    if(ks == null){
+        ks = defaultpositionKeys;
+    }
     for(var key in feature.attributes){
         if(ks.indexOf(key) != -1 && typeof(feature.attributes[key]) == "string"){
-            var val = trueish(feature.attributes[key]);
+            var val = feature.attributes[key];
+            if(!isNumber(val)){
+                val = trueish(val);
+            }
             feature.attributes[key] = {};
             feature.attributes[key].available = val;
             feature.attributes[key].position = feature.geometry.getCentroid();
@@ -263,7 +275,7 @@ function onFeatureSelect(feature) {
     if(editAttributes == true){
         var info = $("#edit form .info");
 
-        ensurePoints(selectedFeature, ["hq", "aa", "ab", "fob"]);
+        ensurePoints(selectedFeature);
 
         var collection = selectedFeature.attributes;
         info.append(getConfig(collection));
@@ -481,31 +493,27 @@ $(document).ready(  function (){
               getLabel: function(feature,x,y){
                   var res = "";
                   if(feature.geometry && feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon"){
-                      res = "${name}\n\n${map}\n\ndivs: ${divitions}";
-                      if(trueish(feature.attributes.hq)){
-                          res += ", HQ";
-                      }
-                      if(trueish(feature.attributes.ab)){
-                          res += ", AB";
-                      }
-                      if(trueish(feature.attributes.aa)){
-                          res += ", AA";
-                      }
-                      if(trueish(feature.attributes.fob)){
-                          res += ", FOB";
+                      res = "${name}\n\n${map}";
+                  }else{
+                      if(feature.geometry && feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Point"){
+                          if(feature.attributes && feature.attributes.type && feature.attributes.type == "divitions"){
+                              res = feature.attributes.available;
+                          }
                       }
                   }
                   return res;
               },
             getExternalGraphic: function(feature){
                 var res = (feature.attributes && feature.attributes.type &&
-                           trueish(feature.attributes.available)?
+                           feature.attributes.type != "divitions" && trueish(feature.attributes.available)?
                            map.armies.filter(function(army){return army.name == feature.attributes.army;})[0]
                            .externalGraphic[feature.attributes.type] : "");
                 return res;
             },
             getPointRadius: function(feature){
-                return (feature.attributes && feature.attributes.type? (trueish(feature.attributes.available)? 50 : 0 ): 6);
+                return (feature.attributes && feature.attributes.type?
+                        (feature.attributes.type == "divitions"? parseInt(feature.attributes.available) * 4 + 5 :
+                        (trueish(feature.attributes.available)? 50 : 0 )): 6);
             },
             getFillOpacity: function(feature){
                 return (feature.attributes && feature.attributes.type && feature.geometry && feature.geometry.id.indexOf("Point") != -1? 1: 0.6);
@@ -687,11 +695,11 @@ $(document).ready(  function (){
         }
         updateMap(data);
         $("#edit .map").children().remove();
-        $("#edit .map").append(getConfig(data, ["features", "type", "password"], ["armies"]));
+        $("#edit .map").append(getConfig(data, ["features", "type", "password"]));
         showColorPickerBg();
         territories.removeAllFeatures();
         territories.addFeatures(geojson.read(data));
-        $(territories.features).each(function(){ensurePoints(this, ["hq", "aa", "ab", "fob"]); updatePoints(this);});
+        $(territories.features).each(function(){ensurePoints(this); updatePoints(this);});
         updateWCP();
     };
 
