@@ -141,6 +141,19 @@ float:left;
 }
 
 
+.edit .m label.move{
+    clear:none;
+}
+
+
+.edit .m input[name$="position"]{
+    display:none;
+}
+
+.edit .m input[type="checkbox"]{
+    margin:7px;
+}
+
 .edit input[type="submit"],
 .edit input[type="button"]{
     clear:left;

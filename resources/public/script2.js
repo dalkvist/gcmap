@@ -242,7 +242,7 @@ var getConfig = function(collection, ignore, hidden, prename){
                             "'" +
                             (key.toLowerCase().indexOf("color") != -1? " class=\"hex\" " :" ") +
                             " />" +
-                            (key == "position"? "<input name='edit' type='checkbox' class='possitionEdit' />"
+                            (key == "position"? "<label class='move'>move</label>" + "<input name='edit' type='checkbox' class='possitionEdit' />"
                              + ( val.id ?
                                  "<input type='hidden' name='" + prename + "id' value='"+ val.id  +"' class='positionId' />" : "") : "") +
                             "</span>";
@@ -280,6 +280,26 @@ function onPopupClose(evt) {
 }
 function onFeatureSelect(feature) {
 
+
+    if(feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Point"
+      && feature.attributes.parent){
+        if(feature.attributes.parent.CLASS_NAME == "OpenLayers.Feature.Vector"){
+            feature = feature.attributes.parent;
+            selectControl.feature = feature;
+        }else{
+            if(typeof(feature.attributes.parent) == "string"){
+                var p = territories.getFeatureById(feature.attributes.parent);
+                if(p && p.attributes.parent){
+                    var pp = territories.getFeatureById(p.attributes.parent);
+                    if(pp){
+                        feature = pp;
+                        selectControl.feature = feature;
+                    }
+                }
+            }
+        }
+    }
+
     if(feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon"){
 
         selectedFeature = feature;
@@ -313,20 +333,27 @@ function onFeatureSelect(feature) {
 }
 
 function onFeatureUnselect(feature) {
-    if(mf.feature && mf.feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Point"){
-        var f = mf.feature;
-        var p = f.attributes.parent;
-        p.attributes[mf.feature.attributes.type].position = f.geometry;
-        mf.unselectFeature();
 
-        $(".possitionEdit:checked").attr("checked", false);
-
-        onFeatureUnselect(p);
-        editAttributes = true;
-        p.attributes.selected = true;
-        selectControl.select(p);
+    if(feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Point"
+      && feature.attributes.parent){
+        if(feature.attributes.parent.CLASS_NAME == "OpenLayers.Feature.Vector"){
+            feature = feature.attributes.parent;
+            selectControl.feature = feature;
+        }else{
+            if(typeof(feature.attributes.parent) == "string"){
+                var p = territories.getFeatureById(feature.attributes.parent);
+                if(p && p.attributes.parent){
+                    var pp = territories.getFeatureById(p.attributes.parent);
+                    if(pp){
+                        feature = pp;
+                        selectControl.feature = feature;
+                    }
+                }
+            }
+        }
     }
-    else{
+
+    if(feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon"){
         feature.attributes.selected = false;
         territories.redraw();
         if(editAttributes == true){
