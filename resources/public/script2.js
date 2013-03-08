@@ -197,7 +197,7 @@ var updateWCP  = function(){
 
 }
 
-var map, selectControl, selectedFeature,updateMap, loadMap, getMap, territories, featuresm, mf, dc;
+var map, selectControl, selectedFeature,updateMap, loadMap, getMap, territories, featuresm, mf, dc, dragFeature;
 var editAttributes = false;
 var editGeometry = false;
 
@@ -255,11 +255,14 @@ var getConfig = function(collection, ignore, hidden, prename){
         });
 };
 
-var defaultpositionKeys = ["hq", "aa", "ab", "fob", "divitions"];
+var defaultpositionKeys = ["hq", "aa", "ab", "fob", "divitions", "label"];
 
 var ensurePoints = function(feature, ks){
     if(ks == null){
         ks = defaultpositionKeys;
+    }
+    if(!feature.attributes.label){
+        feature.attributes.label = "";
     }
     for(var key in feature.attributes){
         if(ks.indexOf(key) != -1 && typeof(feature.attributes[key]) == "string"){
@@ -270,6 +273,14 @@ var ensurePoints = function(feature, ks){
             feature.attributes[key] = {};
             feature.attributes[key].available = val;
             feature.attributes[key].position = feature.geometry.getCentroid();
+            if(key == "label"){
+                if(feature.attributes["xOffset"] != null || feature.attributes["yOffset"] != null){
+                    feature.attributes[key].available = true;
+
+                    delete feature.attributes["xOffset"];
+                    delete feature.attributes["yOffset"];
+                }
+            }
         }
     }
     return feature;
@@ -355,6 +366,7 @@ function onFeatureUnselect(feature) {
 
     if(feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon"){
         dc.deactivate();
+        dragFeature = null;
         feature.attributes.selected = false;
         territories.redraw();
         if(editAttributes == true){
@@ -492,10 +504,12 @@ $("#edit form input.possitionEdit").live("click", function(){
 
     if($(this).closest(".m").find("input[name$='available']").attr("value") != "false"){
         if($(this).attr("checked")){
-            dc.feature = f;
+            dragFeature = f;
             dc.activate();
+            territories.redraw();
         }else{
             dc.deactivate();
+            dragFeature = null;
         }
         return true;
     }else{
@@ -607,35 +621,51 @@ $(document).ready(  function (){
             fontColor: "white",
             fontSize: "12px",
             fontFamily: "Courier New, monospace",
-            labelXOffset: "${xOffset}",
-            labelYOffset: "${yOffset}",
             labelOutlineColor: "black",
             labelOutlineWidth: 1
         }, {context: {
               getLabel: function(feature,x,y){
                   var res = "";
-                  if(feature.geometry && feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon"){
-                      res = "${name}\n\n${map}";
-                  }else{
-                      if(feature.geometry && feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Point"){
-                          if(feature.attributes && feature.attributes.type && feature.attributes.type == "divitions"){
-                              res = feature.attributes.available;
-                          }
+                  if(feature.geometry && feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Point"){
+                      if(feature.attributes && feature.attributes.type && feature.attributes.type == "divitions"){
+                          res = feature.attributes.available;
+                      }
+                      if(feature.attributes && feature.attributes.type && feature.attributes.type == "label"){
+                          res = feature.attributes.parent.attributes.name + "\n\n" + feature.attributes.parent.attributes.map;
                       }
                   }
                   return res;
               },
             getExternalGraphic: function(feature){
                 var res = (feature.attributes && feature.attributes.type &&
-                           feature.attributes.type != "divitions" && trueish(feature.attributes.available)?
+                           feature.attributes.type != "divitions" && feature.attributes.type != "label"
+                           && trueish(feature.attributes.available)?
                            map.armies.filter(function(army){return army.name == feature.attributes.army;})[0]
                            .externalGraphic[feature.attributes.type] : "");
                 return res;
             },
             getPointRadius: function(feature){
-                return (feature.attributes && feature.attributes.type?
-                        (feature.attributes.type == "divitions"? parseInt(feature.attributes.available) * 4 + 5 :
-                        (trueish(feature.attributes.available)? 50 : 0 )): 6);
+                var res = 6;
+
+                if(feature.attributes && feature.attributes.type){
+                    res = 0;
+
+                    if(feature.attributes.type == "divitions"){
+                        res = parseInt(feature.attributes.available) * 4 + 5;
+                    }else{
+                        if(trueish(feature.attributes.available)){
+                            res = 50;
+                            if(feature.attributes.type == "label"){
+                                if(feature == dragFeature){
+                                    res = 6;
+                                }else {
+                                    res= 0;
+                                }
+                            }
+                        }
+                    }
+                }
+                return res;
             },
             getFillOpacity: function(feature){
                 return (feature.attributes && feature.attributes.type && feature.geometry && feature.geometry.id.indexOf("Point") != -1? 1: 0.6);
