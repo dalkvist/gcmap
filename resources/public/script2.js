@@ -354,6 +354,7 @@ function onFeatureUnselect(feature) {
     }
 
     if(feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon"){
+        dc.deactivate();
         feature.attributes.selected = false;
         territories.redraw();
         if(editAttributes == true){
