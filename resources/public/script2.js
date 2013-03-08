@@ -571,6 +571,15 @@ $("#edit #update").live("click", function(){
     return false;
 });
 
+$("#edit .map input[type='text']").live("keypress", function(event) {
+  if ( event.which == 13 ) {
+      updateMap(getMapInfo());
+      return false;
+  }else{
+    return true;
+  }
+});
+
 var updateMapSize = function(){
   $("#map").height($(window).height()*0.9);
   $("#map").width(($(window).width()*0.95) - 250);
