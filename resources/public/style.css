@@ -116,13 +116,23 @@ float:left;
     margin-bottom: 5px;
 }
 
-.edit form .m .m span {
+.edit form .map .m .m > span {
     display: none;
 }
 
-.edit form .m .m.show span {
+.edit form .map .m .m.show > span {
     display: block;
 }
+
+
+.edit form .info .m > span {
+    display: none;
+}
+
+.edit form .info .m.show > span {
+    display: block;
+}
+
 .edit .select label {
     width:100px;
     clear:none;
