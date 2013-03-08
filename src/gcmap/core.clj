@@ -44,7 +44,7 @@
             [:a.info {:href "#"} "info"]
             [:div#wcp [:span.a1] [:span.a2]]]
            [:div#search
-            [:a.seach {:href "#"} "seach"]
+            [:a.seach {:href "#"} "search"]
             [:div.sub
              (fh/form-to [:get ""]
                (fh/label "lseach" "seach map:")(fh/text-field "mapSearch")
