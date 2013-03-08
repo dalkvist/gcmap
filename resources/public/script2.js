@@ -464,6 +464,7 @@ $("#attack form").live("submit", function(){ var from = $("#attack #from").val()
                                              return false;
                                            });
 
+$("#attack input[type='reset']").live("click", function(){ cancelAttack();});
 
 $("#sidebar #edit input[type='radio']").live("click", function(){
     var selected = $("#sidebar #edit :checked").attr('value');
@@ -959,7 +960,7 @@ var getTerritory = function(name){
     if(name == null || name == ""){
         return false;
     }else{
-        return $(territories.features).filter(function(){ return this.geometry.CLASS_NAME == "Openlayers.Geometry.Polygon"
+        return $(territories.features).filter(function(){ return this.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon"
                                                           && this.attributes.name.toLowerCase().indexOf(name.toLowerCase()) != -1; })[0];
     }
 }
@@ -986,6 +987,12 @@ function stopAttackAnimation() {
     features.display(false);
 }
 
+var cancelAttack = function(){
+    stopAttackAnimation();
+    filterTerritory("underAttack", true).each(function(){this.attributes.underAttack = false;});
+    territories.redraw();
+}
+
 
 var attack = function (from, to, divitions){
 
@@ -993,7 +1000,7 @@ var attack = function (from, to, divitions){
 
         var t1 = getTerritory(from);
 
-        if(divitions + 1 <=  t1.attributes.divitions){
+        if(divitions + 1 <=  t1.attributes.divitions.available){
             var t2 = getTerritory(to);
             var p1 = t1.geometry.getCentroid();
             var p2 = t2.geometry.getCentroid();
@@ -1001,7 +1008,6 @@ var attack = function (from, to, divitions){
             var ls = new OpenLayers.Feature.Vector(new OpenLayers.Geometry.LineString([p1,p2]));
             var cp = getPointOnLine(ls.geometry, 0.5);
 
-            t1.attributes.divitions = t1.attributes.divitions - divitions;
             t2.attributes.underAttack = true;
             ls.attributes.army = t1.attributes.army;
 

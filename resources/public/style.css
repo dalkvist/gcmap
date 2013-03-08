@@ -81,6 +81,8 @@ form span input[type="text"].hex{
     width: 75px;
 }
 
+#attack input[type='submit'],
+#attack input[type='reset'],
 #search input[type='reset'],
 #search input[type='submit']{
     float:left;

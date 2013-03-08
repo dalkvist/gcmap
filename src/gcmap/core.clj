@@ -58,7 +58,9 @@
                (fh/label "lfrom" "attack from:") (fh/text-field "from")
                (fh/label "lfrom" "to:") (fh/text-field "to")
                (fh/label "ldivitions" "nr divitions:")(fh/text-field "divitions")
-               (fh/submit-button "ATTACK!"))]]
+               (fh/submit-button "ATTACK!")
+               (fh/reset-button "cancel")
+               [:div.clear])]]
            [:div#edit.edit
             [:a.edit {:href "#"} "edit"]
             [:div.sub
