@@ -395,7 +395,13 @@ var dragComplete = function(feature, pixel){
 var dragStart = function(feature){
     if(feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Point"){
         if($("input[name='" + feature.attributes.type + ".id']").attr("value") ==  feature.geometry.id){
-            return true;
+            if($("#edit form input[type='checkbox']:checked").closest(".m").find("input[name$='.id']").attr("value")
+              == feature.geometry.id){
+                  return true;
+              }else{
+                  dc.handlers.drag.deactivate();
+                  return false;
+              }
         }else{
             dc.handlers.drag.deactivate();
             return false;
@@ -503,6 +509,10 @@ $("#edit form input.possitionEdit").live("click", function(){
     var f = $(territories.features).filter(function(){return this.geometry.id == id;})[0];
 
     if($(this).closest(".m").find("input[name$='available']").attr("value") != "false"){
+        var that = this;
+        $("#edit form input[type='checkbox']:checked")
+            .filter(function(i,e){return e != that;})
+            .each(function(){$(this).attr("checked", false);});
         if($(this).attr("checked")){
             dragFeature = f;
             dc.activate();
