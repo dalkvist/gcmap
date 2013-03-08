@@ -617,9 +617,9 @@ $(document).ready(  function (){
     );
 
     map.armies = [{name: "star", fillColor:'#550000', strokeColor:'#990000', selectedFillColor: '#EE0000', attackColor: "#DD0000",
-                   externalGraphic: {hq: "img/hq2.png", aa: "img/aa2.png", ab: "img/ab2.png", fob: "img/fob2.png"}},
+                   externalGraphic: {hq: "img/hq2.png", aa: "img/aa2.png", ab: "img/ab2.png", fob: "img/fob2.png", bigSize: 45, size: 35, smallSize: 20}},
                   {name: "gld", fillColor:'#000055', strokeColor:'#000099', selectedFillColor: '#0000EE', attackColor: "#0044EE",
-                   externalGraphic: {hq: "img/hq.png", aa: "img/aa.png", ab: "img/ab.png", fob: "img/fob.png"}}];
+                   externalGraphic: {hq: "img/hq.png", aa: "img/aa.png", ab: "img/ab.png", fob: "img/fob.png", bigSize: 45, size: 35, smallSize: 20}}];
 
    var style = new OpenLayers.Style({
             strokeOpacity: 1,
@@ -666,6 +666,20 @@ $(document).ready(  function (){
                     }else{
                         if(trueish(feature.attributes.available)){
                             res = 50;
+
+                            if(feature.attributes.type && feature.attributes.army){
+                                var eg = map.armies.filter(function(army){return army.name == feature.attributes.army;})[0].externalGraphic;
+                                if(map.getScale() < 35000000){
+                                    res = eg.bigSize;
+                                }else{
+                                    if(map.getScale() > 130000000 ){
+                                        res = eg.smallSize;
+                                    }else{
+                                        res = eg.size;
+                                    }
+                                }
+                            }
+
                             if(feature.attributes.type == "label"){
                                 if(feature == dragFeature){
                                     res = 6;
