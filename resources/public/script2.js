@@ -197,7 +197,7 @@ var updateWCP  = function(){
 
 }
 
-var map, selectControl, selectedFeature,updateMap, loadMap, getMap, territories, featuresm, mf;
+var map, selectControl, selectedFeature,updateMap, loadMap, getMap, territories, featuresm, mf, dc;
 var editAttributes = false;
 var editGeometry = false;
 
@@ -342,6 +342,30 @@ function onFeatureUnselect(feature) {
     }
 }
 
+var dragComplete = function(feature, pixel){
+    if(feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Point"){
+        if($("input[name='" + feature.attributes.type + ".id']").attr("value") ==  feature.geometry.id){
+            feature.attributes.parent.attributes[feature.attributes.type].position = feature.geometry;
+            $("input[name='" + feature.attributes.type + ".position']").attr("value", feature.geometry);
+        }
+    }
+};
+
+
+var dragStart = function(feature){
+    if(feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Point"){
+        if($("input[name='" + feature.attributes.type + ".id']").attr("value") ==  feature.geometry.id){
+            return true;
+        }else{
+            dc.handlers.drag.deactivate();
+            return false;
+        }
+    }else{
+        dc.handlers.drag.deactivate();
+        return false;
+    }
+};
+
 var geojson = new OpenLayers.Format.GeoJSON();
 
 $("#maps a").live("click", function(){
@@ -351,7 +375,8 @@ $("#maps a").live("click", function(){
 
 var highlightTerritory = function(text){
     $(territories.features).each(function(){
-        if((text != "" && text != " " ) && this.attributes.map.toLowerCase().indexOf(text.toLowerCase()) != -1){
+        if((text != "" && text != " " ) && this.attributes.map &&
+           this.attributes.map.toLowerCase().indexOf(text.toLowerCase()) != -1){
             this.attributes.search = true;
         }else{
             this.attributes.search = false;
@@ -370,14 +395,26 @@ $("#sidebar .m label:first-child").live("click", function(){
     $(this).parent().toggleClass('show');
 });
 
-$("#search form").live("submit", function(){ highlightTerritory($("#mapSearch").val()); return false;});
+$("#search form").live("submit", function(){
+    try{
+        highlightTerritory($("#mapSearch").val());
+    }
+    catch(e){
+    }
+    return false;
+});
+
 
 $("#search form input[type='reset']").live("click", function(){ highlightTerritory("");});
 
 $("#attack form").live("submit", function(){ var from = $("#attack #from").val();
                                              var to = $("#attack #to").val();
                                              var d = $("#attack #divitions").val();
-                                             attack(from,to,d);
+                                             try{
+                                                 attack(from,to,d);
+                                             }
+                                             catch(e){
+                                             }
                                              return false;
                                            });
 
@@ -426,16 +463,13 @@ $("#edit form input.possitionEdit").live("click", function(){
     var f = $(territories.features).filter(function(){return this.geometry.id == id;})[0];
 
     if($(this).closest(".m").find("input[name$='available']").attr("value") != "false"){
-        if(mf.feature){
-            if(mf.feature.geometry.id == id){
-                onFeatureUnselect(f);
-                return true;
-            }
-            return false;
+        if($(this).attr("checked")){
+            dc.feature = f;
+            dc.activate();
         }else{
-        mf.selectFeature(f);
-            return true;
+            dc.deactivate();
         }
+        return true;
     }else{
         return false;
     }
@@ -829,18 +863,24 @@ $(document).ready(  function (){
 
     getMap("latest");
 
-   map.addLayers([basemap, territories, features]);
-   features.setVisibility(false);
-   map.addControl(new OpenLayers.Control.LayerSwitcher());
-   map.zoomTo(1);
+    map.addLayers([basemap, territories, features]);
+    features.setVisibility(false);
+    map.addControl(new OpenLayers.Control.LayerSwitcher());
+    map.zoomTo(1);
 
-   selectControl = new OpenLayers.Control.SelectFeature([territories, features], {hover:false,box:false,onSelect: onFeatureSelect, onUnselect: onFeatureUnselect});
-   map.addControl(selectControl);
-   selectControl.deactivate();
+    selectControl = new OpenLayers.Control.SelectFeature([territories, features], {hover:false,box:false,onSelect: onFeatureSelect, onUnselect: onFeatureUnselect});
+    map.addControl(selectControl);
+    selectControl.deactivate();
 
-   mf = new OpenLayers.Control.ModifyFeature(territories, {standalone : true});
-   map.addControl(mf);
-   mf.activate();
+    mf = new OpenLayers.Control.ModifyFeature(territories, {standalone : true});
+    map.addControl(mf);
+    mf.activate();
+
+
+    dc = new OpenLayers.Control.DragFeature(territories, {onComplete: dragComplete, onEnter: dragStart,
+                                                          geometryTypes: ["OpenLayers.Geometry.Point"]});
+    map.addControl(dc);
+    dc.deactivate();
 
    updateWCP();
 
@@ -851,7 +891,8 @@ var getTerritory = function(name){
     if(name == null || name == ""){
         return false;
     }else{
-        return $(territories.features).filter(function(){ return this.attributes.name.toLowerCase().indexOf(name.toLowerCase()) != -1; })[0];
+        return $(territories.features).filter(function(){ return this.geometry.CLASS_NAME == "Openlayers.Geometry.Polygon"
+                                                          && this.attributes.name.toLowerCase().indexOf(name.toLowerCase()) != -1; })[0];
     }
 }
 
