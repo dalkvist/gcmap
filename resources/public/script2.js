@@ -130,19 +130,22 @@ var updatePoints = function(feature){
             if(value.position){
                 $(territories.features).filter(function(){return this.geometry.id == value.id;}).each(function(){this.destroy();});
 
-                var point;
+                var point,p;
 
                 if(typeof(value.position) == "string"){
-                    var p = new OpenLayers.Geometry.fromWKT(value.position);
+                    p = new OpenLayers.Geometry.fromWKT(value.position);
                     p.id = value.id;
-                    point= new OpenLayers.Feature.Vector(p);
                 }else{
-                    point= new OpenLayers.Feature.Vector(value.position);
+                    p = new OpenLayers.Geometry.Point(value.position.x, value.position.y);
+                    p.id = value.position.id;
                 }
+                point = new OpenLayers.Feature.Vector(p);
+
                 point.attributes = assocIn(point.attributes, ["type"], key);
                 point.attributes = assocIn(point.attributes, ["army"], feature.attributes.army);
                 point.attributes = assocIn(point.attributes, ["available"], feature.attributes[key].available);
                 point.attributes = assocIn(point.attributes, ["parent"], feature);
+                feature.attributes[key].position = point.geometry;
                 territories.addFeatures([point]);
             }
         }
@@ -548,21 +551,25 @@ $("#edit form input[name='geometry']").live("click", function(){
 });
 
 $("#saveform form").live("submit", function(){
-    var m = getMapInfo();
-    updateMap(m);
-    m.password = $("#password").val();
-    m.newmap = geojson.write(territories.features);
-    $.post("http://" + window.location.host + "/save",
-           m,
-           function(d,s){
-               var data = $.parseJSON(d);
-               if(data.message == "map saved"){
-                   $("#maps").prepend("<a href='#'>" + data.name + "</a>");
-               }
-               else{
+    try{
+        var m = getMapInfo();
+        updateMap(m);
+        m.password = $("#password").val();
+        m.newmap = geojson.write($(territories.features)
+                                 .filter(function(){return this.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon";})
+                                 .toArray());
+        $.post("http://" + window.location.host + "/save",
+               m,
+               function(d,s){
+                   var data = $.parseJSON(d);
+                   if(data.message == "map saved"){
+                       $("#maps").prepend("<a href='#'>" + data.name + "</a>");
+                   }
+                   else{
 
-               }
+                   }
            });
+    }catch(ex){}
     return false;
 });
 
@@ -702,7 +709,8 @@ $(document).ready(  function (){
                 return res;
             },
             getFillOpacity: function(feature){
-                return (feature.attributes && feature.attributes.type && feature.geometry && feature.geometry.id.indexOf("Point") != -1? 1: 0.6);
+                return (feature.attributes && feature.attributes.type && feature.geometry
+                        && feature.geometry.id && feature.geometry.id.indexOf("Point") != -1? 1: 0.6);
             },
             getFillColor: function(feature){
                 return map.armies.filter(function(army){return army.name == feature.attributes.army;})[0].fillColor;
