@@ -160,6 +160,10 @@ var updateTerritory = function(){
     territories.redraw();
 };
 
+var neighbors =  function(feature, army){
+    return $(territories.features).filter(function(){return this.geometry && this.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon";})
+        .filter(function(){return (army? this.attributes.army == army: true) && feature != this && feature.geometry.intersects(this.geometry);})};
+
 var updateWCP  = function(){
     if(territories.features.length > 0){
         var territoryCount = function(army){return $(filterTerritory("army",army))
@@ -1027,6 +1031,7 @@ var cancelAttack = function(){
     stopAttackAnimation();
     filterTerritory("underAttack", true).each(function(){this.attributes.underAttack = false; if(this.stop){this.stop(true,true);}});
     territories.redraw();
+    features.removeAllFeatures();
 }
 
 
