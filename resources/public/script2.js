@@ -1003,12 +1003,17 @@ function startAttackAnimation() {
     if (!attackTimer) {
         var f = function(){
             $(territories.features).filter(function(){ return this.attributes.underAttack == true; })
-                .each(function(){this.attributes.underAttackAnnimation = !trueish(this.attributes.underAttackAnnimation);});
-            territories.redraw();
+                .each(function(){
+                    var thatFeature = this;
+                    var svgFeature = $("#map path").filter(function(){return this.id == thatFeature.geometry.id;});
+                    var army = map.armies.filter(function(army){return army.name == thatFeature.attributes.army;})[0];
+                    svgFeature.animate({svgFill: army.attackColor}, 2000);
+                    svgFeature.animate({svgFill: army.fillColor}, 2000);
+                });
             features.setVisibility(true);
         };
         f();
-        attackTimer = window.setInterval(f, 1 * 1000);
+        attackTimer = window.setInterval(f, 4000);
     }
 }
 
@@ -1020,7 +1025,7 @@ function stopAttackAnimation() {
 
 var cancelAttack = function(){
     stopAttackAnimation();
-    filterTerritory("underAttack", true).each(function(){this.attributes.underAttack = false;});
+    filterTerritory("underAttack", true).each(function(){this.attributes.underAttack = false; if(this.stop){this.stop(true,true);}});
     territories.redraw();
 }
 
@@ -1053,6 +1058,7 @@ var attack = function (from, to, divitions){
             ep2.attributes.showlabel = true;
             features.addFeatures([ep1, ep2]);
 
+            features.display(true);
             startAttackAnimation();
         }
     }catch(ex){
