@@ -26,6 +26,8 @@
     (ph/include-js "OpenLayers.debug.js")
     (ph/include-js "Direction.js")
     (ph/include-js "script2.js")
+    (ph/include-js "jquery.svg.js")
+    (ph/include-js "jquery.svganim.js")
     (ph/include-js "farbtastic/farbtastic.js")
 
      ]
