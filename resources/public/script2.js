@@ -912,6 +912,13 @@ $(document).ready(  function (){
         map.baseLayer.redraw();
         map.attackingarmy = data.attackingarmy;
         territories.redraw();
+        makeGridPattern();
+        showGrid();
+        if(!selectControl.active){
+            //no idea why, but with out this the svg patterns will not update
+            selectControl.activate();
+            selectControl.deactivate();
+        }
     };
 
 
@@ -950,6 +957,8 @@ $(document).ready(  function (){
 
         $("#map svg").first().svg()
         svgw = $("#map svg").first().svg("get");
+
+        makeGridPattern();
         showGrid();
     };
 
@@ -1172,7 +1181,8 @@ var showGrid = function (options){
                 var army = map.armies.filter(function(army){return army.name == t.attributes.army;})[0];
                 var path = $("#map path").filter(function(){return this.id == t.geometry.id;}).first();
 
-                $(path).attr("fill","url(#" + (t.attributes.selected == true? grid[army.name].selected.id : grid[army.name].default.id) + ")");
+                var g = (t.attributes && t.attributes.selected && t.attributes.selected == true? grid[army.name].selected : grid[army.name].default);
+                $(path).attr("fill","url(#" + g.id + ")");
             });
         }
     }
