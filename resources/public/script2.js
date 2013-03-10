@@ -212,7 +212,7 @@ var updateWCP  = function(){
 
 }
 
-var map, selectControl, selectedFeature,updateMap, loadMap, getMap, territories, featuresm, mf, dc, dragFeature;
+var map, selectControl, selectedFeature,updateMap, loadMap, getMap, territories, featuresm, mf, dc, dragFeature,svgw;
 var editAttributes = false;
 var editGeometry = false;
 
@@ -395,6 +395,7 @@ function onFeatureUnselect(feature) {
 
         }
     }
+    showGrid();
 }
 
 var dragComplete = function(feature, pixel){
@@ -895,7 +896,8 @@ $(document).ready(  function (){
 
     territories = new OpenLayers.Layer.Vector("Territories", {
         styleMap: new OpenLayers.StyleMap({"default": style, "select": selectedStyle}),
-        rendererOptions: {yOrdering: false}
+        rendererOptions: {yOrdering: false},
+        eventListeners: { "moveend" : showGrid}
     });
 
     updateMap = function(data){
@@ -945,6 +947,10 @@ $(document).ready(  function (){
         territories.addFeatures(geojson.read(data));
         $(territories.features).each(function(){ensurePoints(this); updatePoints(this);});
         updateWCP();
+
+        $("#map svg").first().svg()
+        svgw = $("#map svg").first().svg("get");
+        showGrid();
     };
 
     OpenLayers.Renderer.symbol.arrow = [0,2, 1,0, 2,2, 1,0, 0,2];
@@ -1113,5 +1119,61 @@ var attack = function (from, to, divitions){
             startAttackAnimation();
         }
     }catch(ex){
+    }
+};
+
+
+var grid = null;
+
+var makeGridPattern = function(){
+
+
+    if(!svgw){
+        svgw = $("#map svg").first().svg("get");
+    }
+    if(svgw){
+
+        $(map.armies).each(function(){
+
+            grid = assocIn(grid, [this.name, "default"], svgw.pattern($("#map svg").first(), "grid" + this.name + "default", 0,
+                                                                    0, 20, 20,
+                                                                    0, 0, 40, 40, {patternUnits: "userSpaceOnUse"}));
+
+            svgw.rect(grid[this.name].default,0,0,40,40,0,0,{fill: this.fillColor, opacity: 1});
+            var path = svgw.createPath();
+            svgw.path(grid[this.name].default, path.move(0, 0).line([[0,750]]).close(),{stroke: "#444444", strokeWidth: 10, opacity: 1});
+            svgw.path(grid[this.name].default, path.move(0, 0).line([[750,0]]).close(),{stroke: "#444444", strokeWidth: 10, opacity: 1});
+
+            grid = assocIn(grid, [this.name, "selected"], svgw.pattern($("#map svg").first(), "grid" + this.name + "selected", 0,
+                                                                     0, 20, 20,
+                                                                     0, 0, 40, 40, {patternUnits: "userSpaceOnUse"}));
+
+            svgw.rect(grid[this.name].selected,0,0,40,40,0,0,{fill: this.selectedFillColor, opacity: 1});
+            var path = svgw.createPath();
+            svgw.path(grid[this.name].selected, path.move(0, 0).line([[0,750]]).close(),{stroke: "#444444", strokeWidth: 10, opacity: 1});
+            svgw.path(grid[this.name].selected, path.move(0, 0).line([[750,0]]).close(),{stroke: "#444444", strokeWidth: 10, opacity: 1});
+        });
+    }
+};
+
+var showGrid = function (options){
+
+    if(!svgw){
+        svgw = $("#map svg").first().svg("get");
+    }
+    if(svgw){
+
+        if(!grid){
+            makeGridPattern();
+        }
+        if(grid){
+            $(getTerritory("germ")).each(function(){
+                var t = this;
+                var army = map.armies.filter(function(army){return army.name == t.attributes.army;})[0];
+                var path = $("#map path").filter(function(){return this.id == t.geometry.id;}).first();
+
+                $(path).attr("fill","url(#" + (t.attributes.selected == true? grid[army.name].selected.id : grid[army.name].default.id) + ")");
+            });
+        }
     }
 };
