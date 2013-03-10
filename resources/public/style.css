@@ -63,6 +63,7 @@ form span label {
   margin-top: 4px;
   height:22px;
 }
+form span input[type="select"],
 form span input[type="text"] {
   width: 140px;
   display: block;
@@ -93,11 +94,12 @@ display:block;
 float:left;
 }
 
+#attack form label,
 .edit form label{
     clear:left;
     width:75px;
 }
-
+#attack form span,
 .edit form span  {
     width: 100%;
     height: auto;

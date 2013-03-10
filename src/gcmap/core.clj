@@ -57,9 +57,8 @@
             [:a.attack {:href "#"} "attacking"]
             [:div.sub
              (fh/form-to [:get ""]
-               (fh/label "lfrom" "attack from:") (fh/text-field "from")
-               (fh/label "lfrom" "to:") (fh/text-field "to")
-               (fh/label "ldivitions" "nr divitions:")(fh/text-field "divitions")
+               [:div [:span.wrapper]
+               [:div.clear]]
                (fh/submit-button "ATTACK!")
                (fh/reset-button "cancel")
                [:div.clear])]]

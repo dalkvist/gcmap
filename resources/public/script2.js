@@ -108,19 +108,27 @@ var trueish = function(s){
 }
 
 var theaters = {'australia': 2, 'south america' : 2, 'middle east' : 3, 'africa' : 4, 'north america' : 5, 'europe' : 6, 'asia' : 6};
-var filterTerritory = function(key, value){return  $(map.layers[1].features).filter(function(){return this.attributes[key] == value;});};
+var filterTerritory = function(key, value, not){
+    var f = function(){ return  this.attributes[key] == value;};
+    var terris = $(territories.features).filter(function(){ return this.geometry && this.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon";});
+    if (not != true) {
+        return terris.filter(f);
+    }else{
+        return terris.not(f);
+    }
+};
 
 var getInfo = function(parent){
     var m = {};
     $(parent).each(function(){
-        assocIn(m, this.name.split("."), this.value);
+        assocIn(m, this.name.split("."), $(this).val());
     });
     return m;
 };
 
 
 var getMapInfo = function(){
-    return getInfo("#edit .map input");
+    return getInfo("#edit .map input, #edit .map select");
 };
 
 var updatePoints = function(feature){
@@ -461,7 +469,7 @@ $("#search form").live("submit", function(){
 $("#search form input[type='reset']").live("click", function(){ highlightTerritory("");});
 
 $("#attack form").live("submit", function(){ var from = $("#attack #from").val();
-                                             var to = $("#attack #to").val();
+                                             var to = $("#attack #target").val();
                                              var d = $("#attack #divitions").val();
                                              try{
                                                  attack(from,to,d);
@@ -470,6 +478,35 @@ $("#attack form").live("submit", function(){ var from = $("#attack #from").val()
                                              }
                                              return false;
                                            });
+
+$("#attack a.attack").live("click", function(){
+
+    var wrapper = $(this).parent().find("form span.wrapper").first();
+    if(wrapper.children().length > 0){
+        wrapper.children().remove();
+    }
+    wrapper.append("<label>target</label>"+
+               "<select id='target'>"+
+               filterTerritory("army", map.attackingarmy, true)
+               .map(function(){return this.attributes.name;})
+               .sort()
+               .map(function(){return "<option value='" + this +"'>" + this + "</option>"})
+               .toArray().reduce(function(a,b){return a + b;}) +
+               "</select>"+
+               "<div class='from'>" +
+               "<label>from</label>"+
+               "<select id='from'>"+
+               filterTerritory("army", map.attackingarmy, false)
+               .map(function(){return this.attributes.name;})
+               .sort()
+               .map(function(){return "<option value='" + this +"'>" + this + "</option>"})
+               .toArray().reduce(function(a,b){return a + b;}) +
+                "</select>" +
+               "<label>divitions</label>"+
+               "<input id='divitions' type='text' />" +
+               "</div>");
+    return false;
+});
 
 $("#attack input[type='reset']").live("click", function(){ cancelAttack();});
 
@@ -486,6 +523,10 @@ $("#sidebar #edit input[type='radio']").live("click", function(){
     }
     if(selected == "mapsettings"){
         $("#edit .map,#edit #update").toggle(true);
+        var i = $("input[name='attackingarmy']"), a = i.val();
+        if(a){i.replaceWith("<select name='attackingarmy'>" + $(map.armies)
+                            .map(function(){return "<option selected='" + (this.name == a) +"' value='" + this.name +"'>" + this.name + "</option>";})
+                            .toArray().reduce(function(a,b){return a + b;}) + "</select>");}
     }else{
         $("#edit .map,#edit #update").toggle(false);
     }
@@ -867,6 +908,7 @@ $(document).ready(  function (){
         }
         map.armies = values(data.armies);
         map.baseLayer.redraw();
+        map.attackingarmy = data.attackingarmy;
         territories.redraw();
     };
 
@@ -891,6 +933,10 @@ $(document).ready(  function (){
                 }
             }
         }
+        if(data['attackingarmy'] == null){
+            data['attackingarmy'] = data.armies[0].name;
+        }
+        map.attackingarmy = data.attackingarmy;
         updateMap(data);
         $("#edit .map").children().remove();
         $("#edit .map").append(getConfig(data, ["features", "type", "password"]));
