@@ -162,7 +162,7 @@ var updatePoints = function(feature){
 
 
 var updateTerritory = function(){
-    selectedFeature.attributes = getInfo("#edit .info span input");
+    selectedFeature.attributes = getInfo("#edit .info span input, #edit .info span select");
     updateWCP();
     updatePoints(selectedFeature);
     territories.redraw();
@@ -212,6 +212,8 @@ var updateWCP  = function(){
         var cpp2 = (cp2 > 0? (cp2 / cpt * 100 ).toFixed(2): 0);
         $("#wcp .a1").text( map.armies[0].name +" territory: " + tp1 + "% wcp: " + cpp1 + "% divitions: " + divitionCount(map.armies[0].name));
         $("#wcp .a2").text( map.armies[1].name +" territory: " + tp2 + "% wcp: " + cpp2 + "% divitions: " + divitionCount(map.armies[1].name));
+        $("#wcp .a1").attr("style", "color:" + map.armies[0].strokeColor);
+        $("#wcp .a2").attr("style", "color:" + map.armies[1].strokeColor);
     }
 
 }
@@ -349,6 +351,10 @@ function onFeatureSelect(feature) {
             info.append("<label>Shape</label>");
             info.append('<input  name="geometry" type="radio" value="position">');
             info.append("<label>Position</label>");
+            var i = $("#edit .info input[name='army']"), a = i.val();
+            if(a != null){i.replaceWith("<select name='army'>" + $(map.armies)
+                                .map(function(){return "<option" + (this.name == a ? " selected='true'" :"") +" value='" + this.name +"'>" + this.name + "</option>";})
+                                .toArray().reduce(function(a,b){return a + b;}) + "</select>");}
 
             $("#edit form input[type='submit']").toggleClass('hidden', false);
 
@@ -530,7 +536,7 @@ $("#sidebar #edit input[type='radio']").live("click", function(){
         $("#edit .map,#edit #update").toggle(true);
         var i = $("input[name='attackingarmy']"), a = i.val();
         if(a){i.replaceWith("<select name='attackingarmy'>" + $(map.armies)
-                            .map(function(){return "<option selected='" + (this.name == a) +"' value='" + this.name +"'>" + this.name + "</option>";})
+                            .map(function(){return "<option" + (this.name == a ? " selected='true'" :"") +" value='" + this.name +"'>" + this.name + "</option>";})
                             .toArray().reduce(function(a,b){return a + b;}) + "</select>");}
     }else{
         $("#edit .map,#edit #update").toggle(false);

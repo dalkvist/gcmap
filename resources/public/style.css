@@ -201,12 +201,6 @@ float:left;
   display: block;
   font-weight: bold;
 }
-#wcp span.a1 {
-  color:#AA0000;
-}
-#wcp span.a2 {
-  color:#0000AA;
-}
 
 #export{
   word-break: break-all;
