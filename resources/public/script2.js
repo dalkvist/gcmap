@@ -1230,7 +1230,7 @@ var showGrid = function (options){
             makeGridPattern();
         }
         if(grid){
-            $(getTerritory("germ")).each(function(){
+            $(territories.features).filter(function(i,t){return t.attributes && t.attributes.lastattacked > 0 && map.week - t.attributes.lastattacked < 4;}).each(function(){
                 var t = this;
                 var army = map.armies.filter(function(army){return army.name == t.attributes.army;})[0];
                 var path = $("#map path").filter(function(){return this.id == t.geometry.id;}).first();
