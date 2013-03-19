@@ -168,6 +168,9 @@ float:left;
     margin:7px;
 }
 
+.edit select[name="attackingarmy"]{
+    float:right;
+}
 .edit input[type="submit"],
 .edit input[type="button"]{
     clear:left;
