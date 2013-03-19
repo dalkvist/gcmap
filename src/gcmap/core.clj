@@ -38,7 +38,7 @@
 
 (noir/defpartial map-page [m & {:keys [campaign] :or {campaign 5}}]
   (layout [:h3 (:name m)]
-          [:div#maps (for [m (reverse (sort (map :name (filter #(= campaign (:campaign %)) (get-maps)))))]
+          [:div#maps (for [m (reverse (sort (map :name (filter #(= campaign (get % "campaign")) (get-maps)))))]
                        (ph/link-to "#" m))]
           [:div#map]
           [:div#sidebar
