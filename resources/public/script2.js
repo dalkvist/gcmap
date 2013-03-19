@@ -200,14 +200,14 @@ var updateWCP  = function(){
                                     return (territoryCount(army)  - 0) + (bonuses - 0);
                                    };
 
-        var st = territoryCount("star");
-        var gt = territoryCount("gld");
+        var st = territoryCount(map.armies[0].name);
+        var gt = territoryCount(map.armies[1].name);
         var tt = gt + st;
-        var gcp = getArmyCPs("gld");
-        var scp = getArmyCPs("star");
+        var gcp = getArmyCPs(map.armies[0].name);
+        var scp = getArmyCPs(map.armies[1].name);
         var twcp = gcp + scp;
-        $("#wcp .a1").text( "STAR territory: " + (st / tt * 100 ).toFixed(2) + "% wcp: " + (scp / twcp * 100 ).toFixed(2) + "% divitions: " + divitionCount("star"));
-        $("#wcp .a2").text(  "GLD territory: " + (gt / tt * 100 ).toFixed(2) + "% wcp: " + (gcp / twcp * 100 ).toFixed(2) + "% divitions: " + divitionCount("gld"));
+        $("#wcp .a1").text( map.armies[0].name +" territory: " + (st / tt * 100 ).toFixed(2) + "% wcp: " + (scp / twcp * 100 ).toFixed(2) + "% divitions: " + divitionCount(map.armies[0].name));
+        $("#wcp .a2").text( map.armies[1].name +" territory: " + (gt / tt * 100 ).toFixed(2) + "% wcp: " + (gcp / twcp * 100 ).toFixed(2) + "% divitions: " + divitionCount(map.armies[1].name));
     }
 
 }
@@ -678,9 +678,11 @@ $(document).ready(  function (){
         {numZoomLevels: 3}
     );
 
-    map.armies = [{name: "star", fillColor:'#550000', strokeColor:'#990000', selectedFillColor: '#EE0000', attackColor: "#DD0000",
+    map.armies = [{name: "LOD", fillColor:'#550000', strokeColor:'#990000', selectedFillColor: '#EE0000', attackColor: "#DD0000",
                    externalGraphic: {hq: "img/hq2.png", aa: "img/aa2.png", ab: "img/ab2.png", fob: "img/fob2.png", bigSize: 45, size: 35, smallSize: 20}},
-                  {name: "gld", fillColor:'#000055', strokeColor:'#000099', selectedFillColor: '#0000EE', attackColor: "#0044EE",
+                  {name: "KART", fillColor:'#000055', strokeColor:'#000099', selectedFillColor: '#0000EE', attackColor: "#0044EE",
+                   externalGraphic: {hq: "img/hq.png", aa: "img/aa.png", ab: "img/ab.png", fob: "img/fob.png", bigSize: 45, size: 35, smallSize: 20}},
+                  {name: "", fillColor:'#eeeeee', strokeColor:'#ffffff', selectedFillColor: '#cccccc', attackColor: "#333333",
                    externalGraphic: {hq: "img/hq.png", aa: "img/aa.png", ab: "img/ab.png", fob: "img/fob.png", bigSize: 45, size: 35, smallSize: 20}}];
 
    var style = new OpenLayers.Style({
@@ -820,6 +822,16 @@ $(document).ready(  function (){
                          fillColor:  "${getFillColor}", strokeColor:  "${getStrokeColor}", externalGraphic: "${getExternalGraphic}"
                        }
                     }),
+                    new OpenLayers.Rule({
+                      filter: new OpenLayers.Filter.Comparison({
+                        type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                        property: "army",
+                         value: map.armies[2].name
+                       }),
+                       symbolizer: {
+                         fillColor:  "${getFillColor}", strokeColor:  "${getStrokeColor}", externalGraphic: "${getExternalGraphic}"
+                       }
+                    }),
                 new OpenLayers.Rule({
                         filter: new OpenLayers.Filter.Logical({
                             filters: [
@@ -876,6 +888,38 @@ $(document).ready(  function (){
                                     type: OpenLayers.Filter.Comparison.EQUAL_TO,
                                     property: "army",
                                     value: map.armies[1].name
+                                })],
+                            type: OpenLayers.Filter.Logical.AND
+                        }),
+                        symbolizer: {
+                            fillColor: "${getSelectedFillColor}",
+                            graphicZIndex: 999
+                        }
+                    }),
+                new OpenLayers.Rule({
+                        filter: new OpenLayers.Filter.Logical({
+                            filters: [
+                                new OpenLayers.Filter.Logical({
+                                    filters: [
+                                        new OpenLayers.Filter.Comparison({
+                                            type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                                            property: "search",
+                                            value: true
+                                        }),new OpenLayers.Filter.Comparison({
+                                            type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                                            property: "underAttackAnnimation",
+                                            value: true
+                                        }),new OpenLayers.Filter.Comparison({
+                                            type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                                            property: "selected",
+                                            value: true
+                                        })],
+                                    type: OpenLayers.Filter.Logical.OR
+                                }),
+                                new OpenLayers.Filter.Comparison({
+                                    type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                                    property: "army",
+                                    value: map.armies[2].name
                                 })],
                             type: OpenLayers.Filter.Logical.AND
                         }),
