@@ -178,27 +178,27 @@ var updateWCP  = function(){
                                             .filter(function(){return this.geometry &&
                                                                this.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon";}).length;};
         var divitionCount = function(army){
-                                       var terrs = $.map(filterTerritory('army',army), function(t){var d = (t.attributes && t.attributes.divitions?
-                                                                                                            t.attributes.divitions.available : 0);
-                                                                                                  return (isNumber(d)? parseInt(d) : 0);});
-                                       return terrs.reduce(function(a,b){return a + b;});
-                                       };
+            var terrs = $.map(filterTerritory('army',army), function(t){var d = (t.attributes && t.attributes.divitions?
+                                                                                 t.attributes.divitions.available : 0);
+                                                                        return (isNumber(d)? parseInt(d) : 0);});
+            return (terrs.length > 0 ? terrs.reduce(function(a,b){return a + b;}): 0);
+        };
         var tb = $.map(Object.keys(theaters),function(key){
-                                                                    var res = new Object();
-                                                                    res.theater = key;
-                                                                    var armys = Object.keys(frequencies($.map(filterTerritory("theater", key), function(t){return t.attributes.army;})));
-                                                                    res.army = (armys.length == 1 ? armys[0] : ""); return res;  });
+            var res = new Object();
+            res.theater = key;
+            var armys = Object.keys(frequencies($.map(filterTerritory("theater", key), function(t){return t.attributes.army;})));
+            res.army = (armys.length == 1 ? armys[0] : ""); return res;  });
 
         var getArmyCPs = function(army){
-                                    var bonuses = $.map($(tb).filter(function(){return this.army == army;}),
-                                                                       function(t){ return theaters[t.theater] - 0; });
-                                    if(bonuses != null && bonuses.length > 0 ){
-                                      bonuses = bonuses.reduce(function(a,b){return a + b;});
-                                    }else{
-                                      bonuses = 0;
-                                    }
-                                    return (territoryCount(army)  - 0) + (bonuses - 0);
-                                   };
+            var bonuses = $.map($(tb).filter(function(){return this.army == army;}),
+                                function(t){ return theaters[t.theater] - 0; });
+            if(bonuses != null && bonuses.length > 0 ){
+                bonuses = bonuses.reduce(function(a,b){return a + b;});
+            }else{
+                bonuses = 0;
+            }
+            return (territoryCount(army)  - 0) + (bonuses - 0);
+        };
 
         var t1 = territoryCount(map.armies[0].name);
         var t2 = territoryCount(map.armies[1].name);
@@ -206,10 +206,10 @@ var updateWCP  = function(){
         var cp1 = getArmyCPs(map.armies[0].name);
         var cp2 = getArmyCPs(map.armies[1].name);
         var cpt = cp1 + cp1;
-        var tp1 = (t1 / tt * 100 ).toFixed(2);
-        var tp2 = (t2 / tt * 100 ).toFixed(2);
-        var cpp1 = (cp1 / cpt * 100 ).toFixed(2);
-        var cpp2 = (cp2 / cpt * 100 ).toFixed(2);
+        var tp1 = (t1 > 0? (t1 / tt * 100 ).toFixed(2): 0);
+        var tp2 = (t2 > 0? (t2 / tt * 100 ).toFixed(2): 0);
+        var cpp1 = (cp1 > 0? (cp1 / cpt * 100 ).toFixed(2): 0);
+        var cpp2 = (cp2 > 0? (cp2 / cpt * 100 ).toFixed(2): 0);
         $("#wcp .a1").text( map.armies[0].name +" territory: " + tp1 + "% wcp: " + cpp1 + "% divitions: " + divitionCount(map.armies[0].name));
         $("#wcp .a2").text( map.armies[1].name +" territory: " + tp2 + "% wcp: " + cpp2 + "% divitions: " + divitionCount(map.armies[1].name));
     }
