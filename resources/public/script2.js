@@ -200,14 +200,18 @@ var updateWCP  = function(){
                                     return (territoryCount(army)  - 0) + (bonuses - 0);
                                    };
 
-        var st = territoryCount(map.armies[0].name);
-        var gt = territoryCount(map.armies[1].name);
-        var tt = gt + st;
-        var gcp = getArmyCPs(map.armies[0].name);
-        var scp = getArmyCPs(map.armies[1].name);
-        var twcp = gcp + scp;
-        $("#wcp .a1").text( map.armies[0].name +" territory: " + (st / tt * 100 ).toFixed(2) + "% wcp: " + (scp / twcp * 100 ).toFixed(2) + "% divitions: " + divitionCount(map.armies[0].name));
-        $("#wcp .a2").text( map.armies[1].name +" territory: " + (gt / tt * 100 ).toFixed(2) + "% wcp: " + (gcp / twcp * 100 ).toFixed(2) + "% divitions: " + divitionCount(map.armies[1].name));
+        var t1 = territoryCount(map.armies[0].name);
+        var t2 = territoryCount(map.armies[1].name);
+        var tt = t1 + t2;
+        var cp1 = getArmyCPs(map.armies[0].name);
+        var cp2 = getArmyCPs(map.armies[1].name);
+        var cpt = cp1 + cp1;
+        var tp1 = (t1 / tt * 100 ).toFixed(2);
+        var tp2 = (t2 / tt * 100 ).toFixed(2);
+        var cpp1 = (cp1 / cpt * 100 ).toFixed(2);
+        var cpp2 = (cp2 / cpt * 100 ).toFixed(2);
+        $("#wcp .a1").text( map.armies[0].name +" territory: " + tp1 + "% wcp: " + cpp1 + "% divitions: " + divitionCount(map.armies[0].name));
+        $("#wcp .a2").text( map.armies[1].name +" territory: " + tp2 + "% wcp: " + cpp2 + "% divitions: " + divitionCount(map.armies[1].name));
     }
 
 }
