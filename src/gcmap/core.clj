@@ -47,6 +47,7 @@
            [:div#info.selected
             [:a.info {:href "#"} "info"]
             [:div#wcp [:span.a1] [:span.a2]]]
+           [:div#theaters [:a.theaters {:href "#"} "Theraters"][:div.sub]]
            [:div#search
             [:a.seach {:href "#"} "search"]
             [:div.sub

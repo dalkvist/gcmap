@@ -40,7 +40,7 @@ float:left;
     display:block;
 }
 
-#sidebar > div a:first-child{
+#sidebar > div > a:first-child{
     width: auto;
     height: 15px;
     padding: 5px;
@@ -80,6 +80,15 @@ form span input[type="text"]:focus{
 
 form span input[type="text"].hex{
     width: 75px;
+}
+
+#theaters .theater span {
+    margin-right: 5px;
+}
+
+#theaters .theater a {
+    width: 110px;
+    display: inline-block;
 }
 
 #attack input[type='submit'],

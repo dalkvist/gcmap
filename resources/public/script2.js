@@ -214,9 +214,11 @@ var updateWCP  = function(){
         $("#wcp .a2").text( map.armies[1].name +" territory: " + tp2 + "% wcp: " + cpp2 + "% divitions: " + divitionCount(map.armies[1].name));
         $("#wcp .a1").attr("style", "color:" + map.armies[0].strokeColor);
         $("#wcp .a2").attr("style", "color:" + map.armies[1].strokeColor);
+
+        theaterInfo();
     }
 
-}
+};
 
 var map, selectControl, selectedFeature,updateMap, loadMap, getMap, territories, featuresm, mf, dc, dragFeature,svgw;
 var editAttributes = false;
@@ -457,7 +459,7 @@ var highlightTerritory = function(text){
     territories.redraw();
 };
 
-$("#sidebar > div a:first-child").live("click", function(){
+$("#sidebar > div > a:first-child").live("click", function(){
     $('#sidebar .selected').toggleClass('selected');
     $(this).parent().toggleClass('selected');
 });
@@ -671,6 +673,31 @@ $("input.hex")
         $("#picker").farbtastic(this);
         event.preventDefault();
     });
+
+
+var selectedTheater = "";
+
+var theaterInfo = function(){
+    $("#theaters .sub").children().remove();
+    $(Object.keys(theaters)).map(function(i,k){return { theater: k , armies: frequencies(filterTerritory("theater", k)
+                                                                                         .map(function(j,t){return t.attributes.army;}))};})
+        .each(function(i,t){$("#theaters .sub").append("<div class='theater'><a href='#'>" + this.theater + "</a>" +
+                                                       $($(Object.keys(this.armies)).map(function(i,a){return "<span>" + a + ": " + t.armies[a] + "</span>";}))
+                                                       .toArray().reduce(function(a,b){return a+b;},"") + "</div>");});
+};
+
+var showTheater = function(name){
+    filterTerritory("theaater", selectedTheater).each(function(){this.attributes.selected = false;});
+    selectedTheater = name;
+    filterTerritory("theater", selectedTheater).each(function(){this.attributes.selected = true;});
+    territories.redraw();
+};
+
+$("#theaters .sub a").live("click", function(){
+    showTheater($(this).text());
+    return false;
+});
+
 
 
 $(document).ready(  function (){
