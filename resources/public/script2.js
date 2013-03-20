@@ -479,7 +479,7 @@ $("#search form").live("submit", function(){
 });
 
 
-$("#search form input[type='reset']").live("click", function(){ highlightTerritory("");});
+$("#search form input[type='reset'], #theaters input[type='reset']").live("click", function(){ highlightTerritory("");});
 
 $("#attack form").live("submit", function(){ var from = $("#attack #from").val();
                                              var to = $("#attack #target").val();
@@ -678,18 +678,18 @@ $("input.hex")
 var selectedTheater = "";
 
 var theaterInfo = function(){
-    $("#theaters .sub").children().remove();
+    $("#theaters .sub > div").children().remove();
     $(Object.keys(theaters)).map(function(i,k){return { theater: k , armies: frequencies(filterTerritory("theater", k)
                                                                                          .map(function(j,t){return t.attributes.army;}))};})
-        .each(function(i,t){$("#theaters .sub").append("<div class='theater'><a href='#'>" + this.theater + "</a>" +
+        .each(function(i,t){$("#theaters .sub > div").append("<div class='theater'><a href='#'>" + this.theater + "</a>" +
                                                        $($(Object.keys(this.armies)).map(function(i,a){return "<span>" + a + ": " + t.armies[a] + "</span>";}))
                                                        .toArray().reduce(function(a,b){return a+b;},"") + "</div>");});
 };
 
 var showTheater = function(name){
-    filterTerritory("theaater", selectedTheater).each(function(){this.attributes.selected = false;});
+    filterTerritory("theater", selectedTheater).each(function(){delete this.attributes.search;});
     selectedTheater = name;
-    filterTerritory("theater", selectedTheater).each(function(){this.attributes.selected = true;});
+    filterTerritory("theater", selectedTheater).each(function(){this.attributes.search = true;});
     territories.redraw();
 };
 
