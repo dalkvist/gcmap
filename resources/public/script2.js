@@ -103,6 +103,18 @@ var assocIn = function (m, ks, v){
     return m;
 };
 
+function getParameterByName(name)
+{
+  name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+  var regexS = "[\\?&]" + name + "=([^&#]*)";
+  var regex = new RegExp(regexS);
+  var results = regex.exec(window.location.search);
+  if(results == null)
+    return "";
+  else
+    return decodeURIComponent(results[1].replace(/\+/g, " "));
+};
+
 var trueish = function(s){
   return s != null && ( s == true || (typeof(s) == "string" && ( s.toLowerCase()  == "true" || s.toLowerCase() == "yes" || s == "1")));
 }
@@ -1114,7 +1126,7 @@ $(document).ready(  function (){
         rendererOptions: {yOrdering: false}
     });
 
-    getMap("latest");
+    getMap(getParameterByName("mapname") == "" ?  "latest" : getParameterByName("mapname"));
 
     map.addLayers([basemap, territories, features]);
     features.setVisibility(false);
