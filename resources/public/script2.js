@@ -619,13 +619,17 @@ $("#saveform form").live("submit", function(){
         $.post("http://" + window.location.host + "/save",
                m,
                function(d,s){
-                   var data = $.parseJSON(d);
-                   if(data.message == "map saved"){
-                       $("#maps").prepend("<a href='#'>" + data.name + "</a>");
-                   }
-                   else{
+                   if(d.headers.Location){
+                       window.location = d.headers.Location;
+                       }else{
+                           var data = $.parseJSON(d);
+                           if(data.message == "map saved"){
+                               $("#maps").prepend("<a href='#'>" + data.name + "</a>");
+                           }
+                           else{
 
-                   }
+                           }
+                       }
            });
     }catch(ex){}
     return false;
@@ -1032,7 +1036,7 @@ $(document).ready(  function (){
         map.attackingarmy = data.attackingarmy;
         updateMap(data);
         $("#edit .map").children().remove();
-        $("#edit .map").append(getConfig(data, ["features", "type", "password"]));
+        $("#edit .map").append(getConfig(data, ["features", "type", "password", "private"]));
         showColorPickerBg();
         territories.removeAllFeatures();
         territories.addFeatures(geojson.read(data));

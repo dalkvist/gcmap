@@ -6,6 +6,7 @@
             (ring.util [response :as response])
             (ring.middleware [multipart-params :as mp])
             [noir.response :as res]
+            [noir.request :as req]
             [noir.server :as server]
             [noir.validation :as vali]
             [hiccup.form-helpers :as fh]
@@ -37,11 +38,14 @@
       ]]))
 
 (noir/defpartial map-page [m & {:keys [campaign] :or {campaign 5}}]
+  (println "map page" (select-keys m [:name :private]))
   (layout [:h3 (:name m)]
-          [:div#maps (for [m (reverse (sort-by :week (map #(select-keys % [:name :week :campaign :state])
-                                                          (filter #(= (str campaign) (str (get % :campaign 0)))
-                                                                  (get-maps)))))]
-                       (ph/link-to "#" (:name m)))]
+          [:div#maps (for [mname (reverse (sort-by :week (map #(select-keys % [:name :week :campaign :state])
+                                                              (filter #(and (not (get % :private))
+                                                                            (= (str campaign)
+                                                                               (str (get % :campaign 0))))
+                                                                      (get-maps)))))]
+                       (ph/link-to "#" (:name mname)))]
           [:div#map]
           [:div#sidebar
            [:div#info.selected
@@ -109,20 +113,33 @@
 (noir/defpage "/favicon.ico" [] "")
 
 (noir/defpage "/" {:keys [mapname]}
-  (let [m (first (if mapname (filter #(= (:name %) mapname) (get-maps)) (get-maps)))]
+  (println "mapname"              (-> (first (filter #(not (:private %))
+                                          (if mapname (filter #(= (:name %) mapname) (get-maps)) (get-maps))))
+                             (select-keys [:name :private])))
+  (let [m (first (filter #(not (:private %))
+                         (if mapname (filter #(= (:name %) mapname) (get-maps)) (get-maps))))]
+    (println "m " (select-keys m [:name :private]))
     (map-page m)))
 
 (noir/defpage [:get "/map/:mapname"] {:keys [mapname]}
   (res/json (if-let [m (first (filter #(= mapname (:name %)) (get-maps)))]
               m
-              (last (get-maps)))))
+              (last (filter #(not (:private %)) (get-maps))))))
 
 (noir/defpage [:post "/save"] {:as m}
-    (res/json
-     (if (and (m :name) (m :newmap) (m :password) (= (hash (m :password)) -2099765068))
-            (do (save-map! (merge (j/decode (m :newmap)) (dissoc m :newmap :password) ))
-                (j/encode {:message "map saved" :name (:name m)}))
-            (j/encode {:message "password error" :name (:name m)}))))
+  (res/json
+   (let [password-type (case (hash (m :password))
+                         -2099765068 :public
+                         -712624587 :private
+                         false)
+         name (case password-type :private (str (java.util.UUID/randomUUID)) (:name m))]
+     (if (and (m :name) (m :newmap) (m :password) (keyword? password-type))
+       (do (save-map! (merge (j/decode (m :newmap)) (dissoc m :newmap :password)
+                             {:private (case password-type :private true false) :name name}))
+           (if (= :private password-type)
+             (response/redirect (str "http://" ((:headers (req/ring-request)) "host") "/?mapname=" name))
+             (j/encode {:message "map saved" :name (:name m)})))
+       (j/encode {:message "password error" :name (:name m)})))))
 
 (noir/defpage [:get "/export"] []
   (res/json (get-maps)))
