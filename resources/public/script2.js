@@ -682,7 +682,10 @@ var theaterInfo = function(){
     $(Object.keys(theaters)).map(function(i,k){return { theater: k , armies: frequencies(filterTerritory("theater", k)
                                                                                          .map(function(j,t){return t.attributes.army;}))};})
         .each(function(i,t){$("#theaters .sub > div").append("<div class='theater'><a href='#'>" + this.theater + "</a>" +
-                                                       $($(Object.keys(this.armies)).map(function(i,a){return "<span>" + a + ": " + t.armies[a] + "</span>";}))
+                                                       $($(Object.keys(this.armies)).sort().map(function(i,a){
+                                                           return "<span style='color:" +
+                                                               map.armies.filter(function(army){return army.name == a;})[0].strokeColor +
+                                                               "'>" + a + ": " + t.armies[a] + "</span>";}))
                                                        .toArray().reduce(function(a,b){return a+b;},"") + "</div>");});
 };
 
