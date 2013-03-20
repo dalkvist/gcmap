@@ -170,7 +170,7 @@ var updateTerritory = function(){
 
 var neighbors =  function(feature, army){
     return $(territories.features).filter(function(){return this.geometry && this.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon";})
-        .filter(function(){return (army? this.attributes.army == army: true) && feature != this && feature.geometry.intersects(this.geometry);})};
+        .filter(function(){return (army? this.attributes.army == army: true) && feature != this && feature.geometry.intersects(this.geometry);});};
 
 var updateWCP  = function(){
     if(territories.features.length > 0){
@@ -501,7 +501,7 @@ $("#attack a.attack").live("click", function(){
                filterTerritory("army", map.attackingarmy, true)
                .map(function(){return this.attributes.name;})
                .sort()
-               .map(function(){return "<option value='" + this +"'>" + this + "</option>"})
+               .map(function(){return "<option value='" + this +"'>" + this + "</option>";})
                .toArray().reduce(function(a,b){return a + b;}) +
                "</select>"+
                "<div class='from'>" +
@@ -510,7 +510,7 @@ $("#attack a.attack").live("click", function(){
                filterTerritory("army", map.attackingarmy, false)
                .map(function(){return this.attributes.name;})
                .sort()
-               .map(function(){return "<option value='" + this +"'>" + this + "</option>"})
+               .map(function(){return "<option value='" + this +"'>" + this + "</option>";})
                .toArray().reduce(function(a,b){return a + b;}) +
                 "</select>" +
                "<label>divitions</label>"+
@@ -1009,7 +1009,7 @@ $(document).ready(  function (){
         $(territories.features).each(function(){ensurePoints(this); updatePoints(this);});
         updateWCP();
 
-        $("#map svg").first().svg()
+        $("#map svg").first().svg();
         svgw = $("#map svg").first().svg("get");
 
         makeGridPattern();
