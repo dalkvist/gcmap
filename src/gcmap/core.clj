@@ -38,8 +38,10 @@
 
 (noir/defpartial map-page [m & {:keys [campaign] :or {campaign 5}}]
   (layout [:h3 (:name m)]
-          [:div#maps (for [m (reverse (sort (map :name (filter #(= campaign (get % "campaign")) (get-maps)))))]
-                       (ph/link-to "#" m))]
+          [:div#maps (for [m (reverse (sort-by :week (map #(select-keys % [:name :week :campaign :state])
+                                                          (filter #(= (str campaign) (str (get % :campaign 0)))
+                                                                  (get-maps)))))]
+                       (ph/link-to "#" (:name m)))]
           [:div#map]
           [:div#sidebar
            [:div#info.selected
@@ -103,8 +105,8 @@
 
 (noir/defpage "/favicon.ico" [] "")
 
-(noir/defpage "/" []
-  (let [m (first (get-maps))]
+(noir/defpage "/" {:keys [mapname]}
+  (let [m (first (if mapname (filter #(= (:name %) mapname) (get-maps)) (get-maps)))]
     (map-page m)))
 
 (noir/defpage [:get "/map/:mapname"] {:keys [mapname]}
