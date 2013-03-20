@@ -107,7 +107,7 @@ var trueish = function(s){
   return s != null && ( s == true || (typeof(s) == "string" && ( s.toLowerCase()  == "true" || s.toLowerCase() == "yes" || s == "1")));
 }
 
-var theaters = {'australia': 2, 'south america' : 2, 'middle east' : 3, 'africa' : 4, 'north america' : 5, 'europe' : 6, 'asia' : 6};
+var theaters = {'africa': 5, 'australia': 5, 'central america': 5, 'east asia': 5, 'europe': 5, 'middle east': 5, 'north america': 5, 'south america': 5, 'south asia': 5, 'western asia': 5};
 var filterTerritory = function(key, value, not){
     var f = function(){ return  this.attributes[key] == value;};
     var terris = $(territories.features).filter(function(){ return this.geometry && this.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon";});
