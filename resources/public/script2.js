@@ -229,7 +229,7 @@ var getConfig = function(collection, ignore, hidden, prename){
         ignore = ["features"];
     }
     if(hidden == null){
-        hidden = ["id", "edit"];
+        hidden = ["id", "edit", "selected"];
     }
     if(prename == null){
         prename = "";
