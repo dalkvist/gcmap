@@ -189,9 +189,9 @@ var updateWCP  = function(){
         var territoryCount = function(army){return $(filterTerritory("army",army))
                                             .filter(function(){return this.geometry &&
                                                                this.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon";}).length;};
-        var divitionCount = function(army){
-            var terrs = $.map(filterTerritory('army',army), function(t){var d = (t.attributes && t.attributes.divitions?
-                                                                                 t.attributes.divitions.available : 0);
+        var divisionCount = function(army){
+            var terrs = $.map(filterTerritory('army',army), function(t){var d = (t.attributes && t.attributes.divisions?
+                                                                                 t.attributes.divisions.available : 0);
                                                                         return (isNumber(d)? parseInt(d) : 0);});
             return (terrs.length > 0 ? terrs.reduce(function(a,b){return a + b;}): 0);
         };
@@ -222,8 +222,8 @@ var updateWCP  = function(){
         var tp2 = (t2 > 0? (t2 / tt * 100 ).toFixed(2): 0);
         var cpp1 = (cp1 > 0? (cp1 / cpt * 100 ).toFixed(2): 0);
         var cpp2 = (cp2 > 0? (cp2 / cpt * 100 ).toFixed(2): 0);
-        $("#wcp .a1").text( map.armies[0].name +" territory: " + tp1 + "% wcp: " + cpp1 + "% divitions: " + divitionCount(map.armies[0].name));
-        $("#wcp .a2").text( map.armies[1].name +" territory: " + tp2 + "% wcp: " + cpp2 + "% divitions: " + divitionCount(map.armies[1].name));
+        $("#wcp .a1").text( map.armies[0].name +" territory: " + tp1 + "% wcp: " + cpp1 + "% divisions: " + divisionCount(map.armies[0].name));
+        $("#wcp .a2").text( map.armies[1].name +" territory: " + tp2 + "% wcp: " + cpp2 + "% divisions: " + divisionCount(map.armies[1].name));
         $("#wcp .a1").attr("style", "color:" + map.armies[0].strokeColor);
         $("#wcp .a2").attr("style", "color:" + map.armies[1].strokeColor);
 
@@ -290,7 +290,7 @@ var getConfig = function(collection, ignore, hidden, prename){
         });
 };
 
-var defaultpositionKeys = ["hq", "aa", "ab", "fob", "divitions", "label"];
+var defaultpositionKeys = ["hq", "aa", "ab", "fob", "divisions", "label"];
 
 var ensurePoints = function(feature, ks){
     if(ks == null){
@@ -495,7 +495,7 @@ $("#search form input[type='reset'], #theaters input[type='reset']").live("click
 
 $("#attack form").live("submit", function(){ var from = $("#attack #from").val();
                                              var to = $("#attack #target").val();
-                                             var d = $("#attack #divitions").val();
+                                             var d = $("#attack #divisions").val();
                                              try{
                                                  attack(from,to,d);
                                              }
@@ -527,8 +527,8 @@ $("#attack a.attack").live("click", function(){
                .map(function(){return "<option value='" + this +"'>" + this + "</option>";})
                .toArray().reduce(function(a,b){return a + b;}) +
                 "</select>" +
-               "<label>divitions</label>"+
-               "<input id='divitions' type='text' />" +
+               "<label>divisions</label>"+
+               "<input id='divisions' type='text' />" +
                "</div>");
     return false;
 });
@@ -758,7 +758,7 @@ $(document).ready(  function (){
               getLabel: function(feature,x,y){
                   var res = "";
                   if(feature.geometry && feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Point"){
-                      if(feature.attributes && feature.attributes.type && feature.attributes.type == "divitions"){
+                      if(feature.attributes && feature.attributes.type && feature.attributes.type == "divisions"){
                           res = feature.attributes.available;
                       }
                       if(feature.attributes && feature.attributes.type && feature.attributes.type == "label"){
@@ -769,7 +769,7 @@ $(document).ready(  function (){
               },
             getExternalGraphic: function(feature){
                 var res = (feature.attributes && feature.attributes.type &&
-                           feature.attributes.type != "divitions" && feature.attributes.type != "label"
+                           feature.attributes.type != "divisions" && feature.attributes.type != "label"
                            && trueish(feature.attributes.available)?
                            map.armies.filter(function(army){return army.name == feature.attributes.army;})[0]
                            .externalGraphic[feature.attributes.type] : "");
@@ -781,7 +781,7 @@ $(document).ready(  function (){
                 if(feature.attributes && feature.attributes.type){
                     res = 0;
 
-                    if(feature.attributes.type == "divitions"){
+                    if(feature.attributes.type == "divisions"){
                         res = parseInt(feature.attributes.available) * 4 + 5;
                     }else{
                         if(trueish(feature.attributes.available)){
@@ -1052,7 +1052,8 @@ $(document).ready(  function (){
         showColorPickerBg();
         territories.removeAllFeatures();
         territories.addFeatures(geojson.read(data));
-        $(territories.features).each(function(){ensurePoints(this); updatePoints(this);});
+        $(territories.features).each(function(){if(this.attributes.divitions){this.attributes.divisions = this.attributes.divitions; delete this.attributes.divitions;};
+                                                ensurePoints(this); updatePoints(this);});
         updateWCP();
 
         $("#map svg").first().svg();
@@ -1088,7 +1089,7 @@ $(document).ready(  function (){
                     value: true
                 }),
                 symbolizer: {
-                    label : "${divitions}",
+                    label : "${divisions}",
                     pointRadius: 0
                             }
             }),
@@ -1196,13 +1197,13 @@ var cancelAttack = function(){
 }
 
 
-var attack = function (from, to, divitions){
+var attack = function (from, to, divisions){
 
     try{
 
         var t1 = getTerritory(from);
 
-        if(divitions + 1 <=  t1.attributes.divitions.available){
+        if(divisions + 1 <=  t1.attributes.divisions.available){
             var t2 = getTerritory(to);
             var p1 = t1.geometry.getCentroid();
             var p2 = t2.geometry.getCentroid();
@@ -1220,7 +1221,7 @@ var attack = function (from, to, divitions){
             ep1.attributes.arrow = true;
 
             var ep2 = createDirection(ls.geometry,"middle",false)[0];
-            ep2.attributes.divitions = divitions;
+            ep2.attributes.divisions = divisions;
             ep2.attributes.showlabel = true;
             features.addFeatures([ep1, ep2]);
 
