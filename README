@@ -1,10 +1,9 @@
 # gcmap
 
-FIXME: write description
 
-## Usage
-
-FIXME: write
+Setup: backend is in clojure and it uses mongodb for storage.
+It is hosted at heroku.com using their generous free plans, using only one dyno.
+Just create a new app at heroku add the https://addons.heroku.com/mongolab sandbox addon and push to the app repo.
 
 ## License
 
